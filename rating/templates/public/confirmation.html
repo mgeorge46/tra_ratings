@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirm Your Rating</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .detail {
+            margin-bottom: 10px;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        button {
+            background-color: #F39C12;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Confirm Your Rating</h1>
+    <div class="detail">
+        <strong>Motor Type:</strong> {{ motor_type_name }}
+    </div>
+    <div class="detail">
+        <strong>Plate Number:</strong> {{ pending.motor_car_number }}
+    </div>
+    <div class="detail">
+        <strong>Rating Score:</strong> {{ pending.score }}
+    </div>
+    <div class="detail">
+        <strong>Comments:</strong>
+        {% if pending.system_comments|slice:":6" == "Other:" %}
+            {# If only "Other" was selected, you may choose to show a placeholder or nothing here #}
+            No standard comments selected.
+        {% else %}
+            {{ pending.system_comments }}
+        {% endif %}
+    </div>
+    {% if pending.system_comments|slice:":6" == "Other:" %}
+    <div class="detail">
+        <strong>Other:</strong> {{ pending.system_comments|slice:"6:" }}
+    </div>
+    {% endif %}
+
+    <div class="detail" style="display: none;">
+        <strong>Location:</strong> {{ pending.location }}
+    </div>
+
+    <form method="POST" action="{% url 'wizard_step_confirmation' %}">
+        {% csrf_token %}
+        <div class="button-container">
+            <button type="submit" name="action" value="edit">Edit</button>
+            <button type="submit" name="action" value="confirm">Confirm</button>
+        </div>
+    </form>
+    <a href="{% url 'wizard_step_motormake' %}">Change Motor Type</a>
+</body>
+</html>

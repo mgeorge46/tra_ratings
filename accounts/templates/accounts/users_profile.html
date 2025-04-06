@@ -1,0 +1,88 @@
+{% extends "tra_theme/base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Home - Transport Ratings{% endblock %}
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+    }
+    .profile-header {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+        padding: 30px 0;
+        text-align: center;
+    }
+    .profile-header .profile-photo img {
+        border: 5px solid white;
+        border-radius: 50%;
+        width: 150px;
+        height: 150px;
+    }
+    .profile-info h2 {
+        font-size: 24px;
+        margin: 10px 0 5px;
+    }
+    .profile-info p {
+        margin: 0;
+        font-size: 16px;
+    }
+    .card {
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn {
+        margin: 5px;
+    }
+</style>
+
+<div class="profile-header">
+    <div class="profile-photo">
+        <img src="{{ user.image.url }}" alt="{{ user.first_name }}'s Profile Picture">
+    </div>
+    <div class="profile-info">
+        <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+        <p>{{ user.email }}</p>
+        <p>{{ user.designation }} | {{ user.department }}</p>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5>Contact Info</h5>
+                    <p><strong>Phone:</strong> {{ user.contact_number }}</p>
+                    <p><strong>Address:</strong> {{ user.address }}</p>
+                    <p><strong>Date of Birth:</strong> {{ user.date_of_birth }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Edit Profile</h5>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <fieldset class="form-group">
+                            <legend class="border-bottom mb-4">Profile Info</legend>
+                            {{ u_form|crispy }}
+                        </fieldset>
+                        <div class="form-group text-right">
+                            <a href="/" class="btn btn-warning">Cancel</a>
+                            <button class="btn btn-primary" type="submit">Update Profile</button>
+                            <a href="{% url 'user_reset_password' %}" class="btn btn-outline-danger">Reset Password</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+

@@ -1,0 +1,10 @@
+{% extends "tra_theme/base.html" %}
+{% block title %}Server Error{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <h1 style="font-size: 72px; color: #b71c1c;">500</h1>
+  <h4>Internal Server Error</h4>
+  <p>Something went wrong on our side. Please try again later.</p>
+  <a href="{% url 'wizard_step_motormake' %}" class="btn btn-danger mt-3">🔁 Try Again</a>
+</div>
+{% endblock %}

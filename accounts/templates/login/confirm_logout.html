@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Conflict</title>
+</head>
+<body>
+    <h2>Session Conflict</h2>
+    <p>An existing session is already active. Do you want to disconnect the other session and proceed?</p>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" name="action" value="disconnect">Yes, disconnect the other session</button>
+        <button type="submit" name="action" value="cancel">No, keep the other session active</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends "tra_theme/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title %}Offline - Transport Ratings{% endblock %}
+{% block content %}
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    h1 {
+      color: #2196f3;
+    }
+    p {
+      color: #555;
+    }
+  </style>
+
+  <h1>---- You're Offline --- 🚫</h1>
+  <p>Oops! It looks like you lost your internet connection.</p>
+  <p>Don't worry — we'll sync your ratings when you're back online!</p>
+
+  <!-- Add this script block to monitor and respond when the user regains connection -->
+  <script>
+    // If browser starts offline, you could handle that here, too:
+    if (!navigator.onLine) {
+      console.log("Currently offline. Waiting to go online...");
+    }
+
+    // Listen for the "online" event
+    window.addEventListener('online', function() {
+      console.log("Back online! Redirecting...");
+      // Change this to whatever path you want to navigate back to
+      // E.g., your homepage or a page where the user left off
+      window.location.href = "/";
+    });
+  </script>
+
+{% endblock %}

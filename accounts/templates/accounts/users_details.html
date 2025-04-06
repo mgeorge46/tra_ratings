@@ -1,0 +1,82 @@
+{% extends "tra_theme/base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Home - Transport Ratings{% endblock %}
+{% block content %}
+<style>
+        .container {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .details {
+            flex: 1;
+            padding-right: 20px;
+        }
+
+        .profile-image {
+            flex: 1;
+            text-align: center;
+        }
+
+        img {
+            max-width: 300px;
+            max-height: 300px;
+        }
+
+
+</style>
+<!-- Making the Image Circular ---->
+<style>
+                            img {
+                                border-radius: 50%;
+                            }
+                            @keyframes flash {
+                                0% {
+                                    opacity: 1;
+                                }
+                                50% {
+                                    opacity: 0.5;
+                                }
+                                100% {
+                                    opacity: 1;
+                                }
+                            }
+                            tr:first-child img {
+                                animation: flash 1s infinite;
+                            }
+
+
+</style>
+
+<div class="container">
+    <div class="details">
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>First Name:</strong> {{ user.first_name }}</p>
+        <p><strong>Last Name:</strong> {{ user.last_name }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Employee ID:</strong> {{ user.employee_id }}</p>
+        <p><strong>Department:</strong> {{ user.department }}</p>
+        <p><strong>Designation:</strong> {{ user.designation }}</p>
+        <p><strong>Contact Number:</strong> {{ user.contact_number }}</p>
+        <p><strong>Address:</strong> {{ user.address }}</p>
+        <p><strong>Date of Birth:</strong> {{ user.date_of_birth }}</p>
+        <p><strong>Is Manager:</strong> {{ user.is_manager }}</p>
+        <p><strong>Staff Status:</strong> {{ user.staff_status }}</p>
+        <p><strong>Update Comments:</strong> {{ user.update_comments }}</p>
+        <p><strong>Record Date:</strong> {{ user.record_date }}</p>
+        <p><strong>Added By:</strong> {{ user.added_by }}</p>
+        <p><strong>Updated Date:</strong> {{ user.updated_date }}</p>
+        <p><strong>Updated By:</strong> {{ user.updated_by }}</p>
+        <p><strong>Last Admin Password Reset:</strong> {{ user.admin_password_reset }}</p>
+        <p>
+            <a class="btn btn-warning" href="{% url 'user_list'%}" type="Cancel">Cancel</a>
+            <a class="btn btn-outline-secondary" href="{% url 'user_update' user.id %}">Edit</a>
+            <a class="btn btn-outline-danger" href="{% url 'admin_reset_password' user.id %}">Reset Password</a>
+            <a class="btn btn-danger" href="#">Delete User</a>
+            <a class="btn btn-info" href="#">Print</a>
+        </p>
+    </div>
+    <div class="profile-image">
+        <img alt="Profile Picture" src="{{ user.image.url }}">
+    </div>
+    {% endblock content %}

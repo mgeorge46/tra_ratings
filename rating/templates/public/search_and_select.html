@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search and Select Motor Type</title>
+    <style>
+        /* Styling same as before */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .search-form {
+    display: flex;
+    justify-content: center; /* Centers the entire form horizontally */
+    align-items: center; /* Aligns the button and search bar vertically */
+    gap: 8px; /* Adds space between the search bar and button */
+    margin-top: 20px; /* Optional: Adds spacing from the top */
+}
+.search-container {
+    display: flex;
+    justify-content: center; /* Centers the form horizontally */
+    margin-top: 20px; /* Adds spacing from the top */
+}
+
+.search-form {
+    display: flex;
+    align-items: center; /* Ensures vertical alignment of the input and button */
+    gap: 8px; /* Adjusts space between the input and button */
+}
+
+.search-box {
+    width: 300px; /* Sets a fixed width for the input field */
+    padding: 8px; /* Adds padding inside the input field */
+    font-size: 16px; /* Adjusts the font size */
+    border: 1px solid #ccc; /* Adds a light border */
+    border-radius: 4px; /* Rounds the edges slightly */
+}
+
+.search-button {
+    padding: 8px 12px; /* Adds padding to the button */
+    font-size: 16px; /* Adjusts the font size */
+    background-color: #007bff; /* Button background color */
+    color: white; /* Button text color */
+    border: none; /* Removes the border */
+    border-radius: 4px; /* Rounds the button edges */
+    cursor: pointer; /* Changes the cursor to a pointer on hover */
+}
+
+.search-button:hover {
+    background-color: #0056b3; /* Darkens the button color on hover */
+}
+
+.error {
+    margin-top: 10px;
+    color: red; /* Changes the error message color to red */
+    font-size: 14px; /* Adjusts the font size for readability */
+}
+
+
+        .motor-type-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 10px;
+        }
+        .motor-type {
+            padding: 10px 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .motor-type:hover {
+            background-color: #ddd;
+        }
+        .motor-type.selected {
+            background-color: #F39C12;
+            color: white;
+            border-color: #F39C12;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #F39C12;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+{% if messages %}
+    <div>
+        {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+    <h1>Search and Select Motor Type</h1>
+
+    <!-- Search Section -->
+    <div class="search-container">
+    <form action="{% url 'search_plate' %}" method="GET" class="search-form">
+        <input type="text" name="q" class="search-box" placeholder="Enter Plate Number" value="{{ query }}" required>
+        <button type="submit" class="search-button">Search</button>
+    </form>
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+</div>
+
+
+    <!-- Motor Type Selection -->
+    <form method="POST" action="?step=search">
+        {% csrf_token %}
+        <input type="hidden" name="motor_type" id="selectedMotorType" value="">
+        <div class="motor-type-container" id="motorTypeContainer">
+            {% for key, value in motor_types %}
+                <div class="motor-type" role="button" onclick="selectMotorType(this, '{{ key }}')">
+                    {{ value }}
+                </div>
+            {% endfor %}
+        </div>
+        <button type="submit" id="proceedButton" disabled>Proceed to Feedback</button>
+
+    </form>
+
+   <button id="logout">Logout</button>
+<button id="profile">Profile</button>
+
+<script>
+    document.getElementById('logout').addEventListener('click', function() {
+        // Redirect to the logout URL
+        window.location.href = '/accounts/logout/'; // Replace with your actual logout URL
+    });
+
+    document.getElementById('profile').addEventListener('click', function() {
+        // Redirect to the profile URL
+        window.location.href = '/accounts/profile/'; // Replace with your actual profile URL
+    });
+</script>
+
+
+    <script>
+        function selectMotorType(element, value) {
+            document.querySelectorAll(".motor-type").forEach(el => el.classList.remove("selected"));
+            element.classList.add("selected");
+            document.getElementById("selectedMotorType").value = value;
+            document.getElementById("proceedButton").disabled = false;
+        }
+    </script>
+</body>
+</html>

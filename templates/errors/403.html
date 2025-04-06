@@ -1,0 +1,9 @@
+{% extends "tra_theme/base.html" %}
+{% block title %}Access Denied{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <h1 style="font-size: 72px; color: #ff9800;">403</h1>
+  <h4>You don’t have permission to access this page.</h4>
+  <a href="{% url 'wizard_step_motormake' %}" class="btn btn-warning mt-3">🏠 Go to Home</a>
+</div>
+{% endblock %}

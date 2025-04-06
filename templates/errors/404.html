@@ -1,0 +1,10 @@
+{% extends "tra_theme/base.html" %}
+{% block title %}Page Not Found{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <h1 style="font-size: 72px; color: #2a5298;">404</h1>
+  <h4>Oops! The page you’re looking for doesn’t exist.</h4>
+  <p>It might have been moved or deleted.</p>
+  <a href="{% url 'wizard_step_motormake' %}" class="btn btn-primary mt-3">🔙 Back to Home</a>
+</div>
+{% endblock %}

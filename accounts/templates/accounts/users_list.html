@@ -1,0 +1,69 @@
+{% extends "tra_theme/base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Home - Transport Ratings{% endblock %}
+{% block content %}
+<!-- user_list.html -->
+<form action="" method="get">
+    <div class="row">
+        <div class="row col-md-2">
+            <select class="form-control" id="page_size" name="page_size">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50" selected>50</option>
+            </select>
+
+        </div>
+
+        <div class="row col-md-6">
+            <button class="btn btn-success" type="submit">Filter</button>
+            &nbsp; &nbsp;<input class="form-control col-6" name="q" placeholder="Search Account"
+                                type="text" value="{{ request.GET.q }}">&nbsp;&nbsp;
+            <button class="btn  btn-square btn-secondary" type="submit"> Search</button>
+
+        </div>
+
+        <div class="row col-md-4">
+            <a href="{%url 'user-create' %}" class="btn btn-rounded btn-primary" type="button"><span class="btn-icon-left text-info">
+                <i class="fa fa-plus color-info"></i>
+            </span>Add an Account</a>
+        </div>
+    </div>
+</form><br>
+<table class="table">
+  <thead>
+    <tr>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Email</th>
+      <th>Department</th>
+      <th>Contact Number</th>
+        <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+      <tr>
+        <td>{{ user.first_name }}</td>
+        <td>{{ user.last_name }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.department }}</td>
+        <td>{{ user.contact_number }}</td>
+          <td>
+              <a class="btn btn-outline-success" href="{% url 'user_detail' user.id%}">View</a>
+              <a class="btn btn-outline-primary" href="{% url 'user_update' user.id %}">Edit</a>
+              <a class="btn btn-outline-danger" href="#">Block</a>
+
+          </td>
+
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="7">No users found.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+{% endblock content %}

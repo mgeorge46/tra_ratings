@@ -1,0 +1,13 @@
+{% extends "tra_theme/base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Home - Transport Ratings{% endblock %}
+{% block content %}
+<!-- user_create.html -->
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form|crispy}}
+  <a href="{% url 'user_list' %}" class="btn btn-warning"> Cancel</a>
+  <button class="btn btn-success" type="submit">Create User</button>
+</form>
+
+{% endblock content %}

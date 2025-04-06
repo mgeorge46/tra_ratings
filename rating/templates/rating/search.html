@@ -1,0 +1,34 @@
+{% extends "tra_theme/base.html" %}
+{% load static %}
+{% block title %}Number Plate Search{% endblock %}
+{% block content %}
+    <h1>Search Motor Rating</h1>
+    <form method="get">
+        <input type="text" name="q" placeholder="Enter Plate Number" value="{{ query }}">
+        <button type="submit">Search</button>
+    </form>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+   <button id="logout">Logout</button>
+<button id="profile">Profile</button>
+    <button id="home">Home</button>
+
+<script>
+    document.getElementById('logout').addEventListener('click', function() {
+        // Redirect to the logout URL
+        window.location.href = '/accounts/logout/'; // Replace with your actual logout URL
+    });
+
+    document.getElementById('profile').addEventListener('click', function() {
+        // Redirect to the profile URL
+        window.location.href = '/accounts/profile/'; // Replace with your actual profile URL
+    });
+
+    document.getElementById('home').addEventListener('click', function() {
+        // Redirect to the profile URL
+        window.location.href = '/'; // Replace with your actual profile URL
+    });
+</script>
+{% endblock content %}

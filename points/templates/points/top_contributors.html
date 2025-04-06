@@ -1,0 +1,32 @@
+{% extends "tra_theme/base.html" %}
+{% block title %}Search Motor Rating{% endblock %}
+{% block content %}
+<h2>🏆 Top Contributors</h2>
+<div style="overflow-x: auto;">
+    <table border="1" style="width: 100%; max-width: 600px;">
+        <tr>
+            <th>User</th>
+            <th>Points</th>
+            <th>Level</th>
+        </tr>
+        {% for c in contributors %}
+        <tr>
+            <td>{{ c.user.email|default:c.user.contact_number }}</td>
+            <td>{{ c.points }}</td>
+            <td>{{ c.level }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<style>
+@media only screen and (max-width: 600px) {
+    table {
+        font-size: 14px;
+    }
+    h2 {
+        font-size: 18px;
+    }
+}
+</style>
+{% endblock %}

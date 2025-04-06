@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+      <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js');
+  }
+</script>
+
+  <!-- your head content -->
+  <link rel="manifest" href="{% static 'tra_ratings/manifest.json' %}">
+  <meta name="theme-color" content="#ffffff">
+  <meta charset="UTF-8">
+  <title>{% block title %}Transport Ratings{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: #333;
+      color: white;
+    }
+
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-left button,
+    .nav-right a {
+      background: none;
+      border: none;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .nav-left button:hover,
+    .nav-right a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    footer {
+      margin-top: 40px;
+      padding: 10px;
+      background: #eee;
+      text-align: center;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <div class="navbar">
+    <div class="nav-left">
+      <button onclick="window.history.back()">⬅ Back</button>
+    </div>
+    <div class="nav-right">
+      <a href="{% url 'home' %}">🏠 Home</a>
+      <a href="{% url 'ratings' %}">⭐ Rate</a>
+      <a href="{% url 'logout' %}">🚪 Logout</a>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <!---- UI for prompting notification ------>
+<div id="notify-prompt" style="display:none; position: fixed; bottom: 20px; right: 20px; background: #2196f3; color: white; padding: 15px; border-radius: 8px;">
+  <p><strong>Allow Notifications?</strong><br>We’ll alert you when you win points or bonuses!</p>
+  <button id="acceptNotify" style="margin-top: 10px;">Allow</button>
+</div>
+
+<script>
+  if ('Notification' in window && navigator.serviceWorker) {
+    if (Notification.permission === 'default') {
+      document.getElementById('notify-prompt').style.display = 'block';
+
+      document.getElementById('acceptNotify').addEventListener('click', function () {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            // Register Firebase token here
+            messaging.getToken({ vapidKey: "YOUR_VAPID_KEY" }).then(token => {
+              fetch('/api/save-token/', {
+                method: 'POST',
+                body: JSON.stringify({ token }),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': '{{ csrf_token }}'
+                }
+              }).then(() => {
+                console.log("Token saved");
+              });
+            });
+          }
+          document.getElementById('notify-prompt').style.display = 'none';
+        });
+      });
+    }
+  }
+</script>
+  <div class="container">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+   <!-- Service Worker registration script -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register("/service-worker.js")
+          .then(function(registration) {
+            console.log('ServiceWorker registration successful with scope:', registration.scope);
+          })
+          .catch(function(err) {
+            console.log('ServiceWorker registration failed:', err);
+          });
+      });
+    }
+  </script>
+
+  <!-- Include the main JS file -->
+  <script src="{% static 'js/main.js' %}"></script>
+  <!-- Footer -->
+  <footer>
+    &copy; {{ year|default:"2025" }} Transport Ratings App. All rights reserved.
+  </footer>
+
+</body>
+</html>
+
+
+<!---- Kept by George Muddu ---->
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/workbox-sw.js')
+      .then(reg => {
+        console.log('Service Worker registered ', reg);
+      })
+      .catch(err => {
+        console.error('Service Worker registration failed', err);
+      });
+  }
+</script>

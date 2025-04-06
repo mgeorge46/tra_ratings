@@ -1,0 +1,189 @@
+{% extends "tra_theme/base.html" %}
+{% load static %}
+{% block title %}Search Results{% endblock %}
+{% block content %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rateYo/2.3.2/jquery.rateyo.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rateYo/2.3.2/jquery.rateyo.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            width: 100%;
+            max-width: 800px;
+            border-spacing: 20px;
+        }
+
+        .rating-cell {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            vertical-align: top;
+            height: auto;
+        }
+
+        .rating-cell h3 {
+            margin: 0;
+        }
+
+        .rating-cell.green {
+            border-left: 5px solid #28a745;
+        }
+
+        .rating-cell.orange {
+            border-left: 5px solid #ff9800;
+        }
+
+        .rating-cell.red {
+            border-left: 5px solid #e74c3c;
+        }
+
+        .rateyo {
+            margin-top: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .button-group button {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button-group button:hover {
+            background: #555;
+        }
+
+        td {
+            width: 50%;
+        }
+
+        @media (max-width: 768px) {
+            .rating-cell {
+                display: block;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            table {
+                border-spacing: 10px;
+            }
+
+            td {
+                width: 100%;
+            }
+        }
+    </style>
+
+
+<main>
+    <h1>Searched Ratings For:  {{ motor_car.motor_type|capfirst }} {{ motor_car.motor_car_number }}</h1>
+
+
+    <table>
+        <tr>
+            <td class="rating-cell" id="anonymous-rating">
+                <h3>Verified</h3>
+                <div class="rateyo" data-score="{{ average_rating.average_score_verified }}"></div>
+                <p>Average Score: {{ average_rating.average_score_verified }}</p>
+                <p>Top Comments: {{ average_rating.top_three_system_comments_verified }}</p>
+            </td>
+
+            <td class="rating-cell" id="registered-rating">
+                <h3>Registered</h3>
+                <div class="rateyo" data-score="{{ average_rating.average_score_registered }}"></div>
+                <p>Average Score: {{ average_rating.average_score_registered }}</p>
+                <p>Top Comments: {{ average_rating.top_three_system_comments_registered }}</p>
+            </td>
+        </tr>
+        <tr>
+            <td class="rating-cell" id="verified-rating">
+                <h3>Anonymous</h3>
+                <div class="rateyo" data-score="{{ average_rating.average_score_anonymous }}"></div>
+                <p>Average Score: {{ average_rating.average_score_anonymous }}</p>
+                <p>Top Comments: {{ average_rating.top_three_system_comments_anonymous }}</p>
+            </td>
+
+            <td class="rating-cell" id="last-comments">
+                <h3>Last Comments</h3>
+                <p><strong>Registered:</strong> {{ average_rating.last_comments_registered }}</p>
+                <p><strong>Verified:</strong> {{ average_rating.last_comments_verified }}</p>
+                <p><strong>Anonymous:</strong> {{ average_rating.last_comments_anonymous }}</p>
+
+            </td>
+        </tr>
+    </table>
+</main>
+
+<script>
+    // Update RateYo and Color Code Sections
+    $(document).ready(function () {
+        $(".rateyo").rateYo({
+            readOnly: true,
+            starWidth: "20px",
+            normalFill: "#A0A0A0",
+            ratedFill: "#E74C3C",
+            spacing: "5px",
+            fullStar: true,
+        }).each(function () {
+            let score = $(this).data("score");
+            $(this).rateYo("option", "rating", score);
+
+            let parentDiv = $(this).closest(".rating-cell");
+            if (score > 4) {
+                parentDiv.addClass("green");
+            } else if (score >= 2.5) {
+                parentDiv.addClass("orange");
+            } else {
+                parentDiv.addClass("red");
+            }
+        });
+
+        // Toggle Login/Logout
+        let isLoggedIn = false; // Example dynamic value, replace with actual logic
+        const authLink = document.getElementById("auth-link");
+        authLink.textContent = isLoggedIn ? "Logout" : "Login";
+        authLink.href = isLoggedIn ? "/accounts/logout/" : "/accounts/logout/";
+    });
+</script>
+
+{% endblock %}
+

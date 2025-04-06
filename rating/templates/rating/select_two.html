@@ -1,0 +1,223 @@
+{% extends "tra_theme/base.html" %}
+{% load static %}
+{% block title %}Rate Public Transport{% endblock %}
+{% block content %}
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rateyo@2.3.2/min/jquery.rateyo.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .comment-option {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .comment-option.selected {
+            background-color: #F39C12;
+            color: white;
+        }
+
+        #otherCommentField {
+            display: none;
+            margin-top: 10px;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        button {
+            background-color: #F39C12;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+
+        .form-field {
+            margin-bottom: 15px;
+        }
+    </style>
+
+    <h1>Rate {{motor_type_name}}</h1>
+
+   <form method="POST" action="{% url 'wizard_step_ratemotor' %}">
+        {% csrf_token %}
+            <input type="hidden" name="motor_type" value="{{ motor_type_key }}">
+
+        <!-- Hidden Motor Type Field -->
+
+
+        <!-- MotorCar Number -->
+        <div class="form-field">
+            {{ form.motor_car_number.label_tag }}
+            {{ form.motor_car_number }}
+            {% if form.motor_car_number.errors %}
+                <div class="error">{{ form.motor_car_number.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Hidden 'score' field -->
+        {{ form.score }}
+        {{ form.location }}
+        {{ form.device_id }}
+
+        <!-- Star widget container -->
+        <div class="form-field">
+            <label>Rate:</label>
+            <div id="rateYo"></div>
+            {% if form.score.errors %}
+                <div class="error">{{ form.score.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Pre-Captured Comments -->
+        <div id="ratingComments"></div>
+
+        <!-- Other Comment Field -->
+        <textarea id="otherCommentField" name="comment" placeholder="Specify your feedback here..."></textarea>
+
+        <!-- System Comments -->
+        <input type="hidden" id="id_system_comments" name="system_comments" value="">
+        {% if form.system_comments.errors %}
+            <div class="error">{{ form.system_comments.errors|join:", " }}</div>
+        {% endif %}
+
+        <br>
+        <button type="submit" id="rateButton" name="action" value="rate" disabled>Rate {{motor_type_name}}</button>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/rateyo@2.3.2/min/jquery.rateyo.min.js"></script>
+    <script>
+        $(function () {
+            const rateButton = document.getElementById("rateButton");
+
+            // Auto-capture location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const locationField = document.getElementById("id_location");
+                        if (locationField) {
+                            locationField.value = `${lat},${lng}`;
+                        } else {
+                            console.error("Location field not found in the form.");
+                        }
+                    },
+                    function (error) {
+                        alert("Unable to capture location. Please allow location access in your browser settings.");
+                        console.error("Geolocation error:", error.message);
+                    },
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                alert("Geolocation is not supported by your browser.");
+                console.error("Geolocation is not supported by this browser.");
+            }
+
+            // Initialize RateYo
+            $("#rateYo").rateYo({
+                rating: 0.0, // Default rating
+                halfStar: true,
+                starWidth: "30px",
+                ratedFill: "#F39C12",
+                normalFill: "#C0C0C0",
+                onSet: function (rating) {
+                    // Update the score field in the form
+                    const scoreField = document.getElementById("id_score");
+                    if (scoreField) {
+                        scoreField.value = rating; // Bind the rating to the score field
+                    }
+
+                    // Enable the Rate Vehicle button only if rating is greater than 0
+                    rateButton.disabled = rating === 0.0;
+
+                    // Clear previous comments
+                    const commentsContainer = document.getElementById("ratingComments");
+                    commentsContainer.innerHTML = "";
+
+                    let comments = [];
+
+                    // Generate pre-defined comments based on the rating
+                    if (rating <= 2.5) {
+                        comments = [
+                            "Drove too fast or recklessly",
+                            "Ignored traffic rules",
+                            "Sudden braking or jerky driving",
+                            "Car was unclean or uncomfortable",
+                            "Driver was late or caused delays",
+                            "Distracted while driving",
+                            "Other"
+                        ];
+                    } else if (rating > 2.5 && rating <= 4) {
+                        comments = [
+                            "Decent driving but could improve",
+                            "Followed most traffic rules",
+                            "Car cleanliness could be better",
+                            "Minor delays during the trip",
+                            "Driving was okay but not outstanding",
+                            "Other"
+                        ];
+                    } else {
+                        comments = [
+                            "Polite and professional driver",
+                            "Smooth and safe driving",
+                            "Followed traffic rules",
+                            "Clean and comfortable car",
+                            "Punctual and timely",
+                            "Attentive to road conditions",
+                            "Other"
+                        ];
+                    }
+
+                    // Dynamically create comment options
+                    comments.forEach((comment) => {
+                        const div = document.createElement("div");
+                        div.className = "comment-option";
+                        div.textContent = comment;
+                        div.onclick = () => selectComment(div, comment);
+                        commentsContainer.appendChild(div);
+                    });
+                },
+            });
+
+            // Handle comment selection
+            function selectComment(element, comment) {
+                if (comment === "Other") {
+                    document.getElementById("otherCommentField").style.display = "block";
+                } else {
+                    document.getElementById("otherCommentField").style.display = "none";
+                }
+
+                element.classList.toggle("selected");
+                updateSystemComments();
+            }
+
+            // Update system_comments field
+            function updateSystemComments() {
+                const selectedComments = Array.from(document.querySelectorAll(".comment-option.selected")).map(
+                    (el) => el.textContent
+                );
+                document.getElementById("id_system_comments").value = selectedComments.join(", ");
+            }
+        });
+    </script>
+<a href="{% url 'wizard_step_motormake' %}" class="btn">Change Motor Type</a>
+
+{% endblock %}

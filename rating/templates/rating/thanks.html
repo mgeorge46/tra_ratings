@@ -1,0 +1,10 @@
+{% extends "tra_theme/base.html" %}
+{% load static %}
+{% block title %}Thanks{% endblock %}
+{% block content %}
+    <h1>Thank You!</h1>
+    <p>You rated the motor type: <strong>{{ motor_type_name }}</strong></p>
+    <p>Vehicle number: <strong>{{ motor_car_number }}</strong></p>
+    <a href="{% url 'wizard_step_motormake' %}">Rate Another Vehicle</a>
+
+{% endblock %}

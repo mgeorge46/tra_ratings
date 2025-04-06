@@ -1,0 +1,56 @@
+{% extends "tra_theme/base.html" %}
+{% block title %}Search Motor Rating{% endblock %}
+{% block content %}
+
+<div class="container">
+    <h2>Edit Template: {{ template.name }}</h2>
+
+    <form method="post" id="editTemplateForm">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+
+    <button class="btn btn-secondary mt-2" onclick="previewTemplate({{ template.pk }})">Preview</button>
+    <p><strong>Preview:</strong> <span id="preview-text"></span></p>
+</div>
+
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const typeField = document.getElementById('id_type');
+    const contentField = document.getElementById('id_content');
+    let editorInstance = null;
+
+    function setupEditor() {
+        const type = typeField.value;
+        if (type === 'email' || type === 'whatsapp') {
+            if (!editorInstance) {
+                ClassicEditor.create(contentField).then(editor => {
+                    editorInstance = editor;
+                }).catch(console.error);
+            }
+        } else if (editorInstance) {
+            editorInstance.destroy().then(() => {
+                editorInstance = null;
+                contentField.value = contentField.value.replace(/<[^>]*>?/gm, '');
+            }).catch(console.error);
+        }
+    }
+
+    setupEditor();
+    typeField.addEventListener('change', setupEditor);
+});
+
+function previewTemplate(id) {
+    fetch(`/points/templates/preview/${id}/`)
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("preview-text").innerText = data.preview;
+    });
+}
+</script>
+
+{% endblock %}
+

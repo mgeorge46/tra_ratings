@@ -1,0 +1,21 @@
+{% extends "tra_theme/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title %}Login{% endblock %}
+{% block content %}
+
+<button id="install-btn" style="display: none;">Install App</button>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Login</button>
+</form>
+<a href="{% url 'password_reset' %}">Forgot my Password</a>
+
+<!-- Social login -->
+<a href="#">Login with Google</a>
+<a href="#">Login with Facebook</a>
+
+  <!-- Optional: A custom install button -->
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "tra_theme/base.html" %}
+{% block title %}Search Motor Rating{% endblock %}
+{% block content %}
+<form method="POST" action="{% url 'verify_otp' %}">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="phone_number">Enter OTP for {{phone_number}}:</label>
+        <input type="hidden" name="phone_number" value="{{ phone_number }}">
+        <input type="text" class="form-control" id="otp" name="otp" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Verify OTP</button>
+    {% if error %}
+    <p class="text-danger mt-2">{{ error }}</p>
+    {% endif %}
+</form>
+
+{% endblock %}
