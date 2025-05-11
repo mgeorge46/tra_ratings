@@ -14,8 +14,7 @@ from pathlib import Path
 
 import dj_database_url
 from decouple import config
-from celery.schedules import crontab
-
+from celery.schedules import crontab,timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-e=e64wo@c+f+6@x3$ug(z63_a=z4ttlblovq=r3d&8)r@68v*@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 # settings.py
 
 REDIS_HOST = 'fair-insect-34366.upstash.io'
@@ -76,17 +75,9 @@ CKEDITOR_5_CONFIGS = {
     }
 }
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'  # or your broker of choice
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
-LANGUAGES = [
-    ('en', 'English'),
-    ('lg', 'Luganda'),
-    ('Luo', 'Luo'),
-    ('lug', 'Lugbara'),
-    ('Runy', 'Runyankole')
-]
 
 AUTH_USER_MODEL = "accounts.CustomUser"
 
@@ -120,6 +111,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -127,7 +119,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'accounts.middleware.EnsureSessionMiddleware',
 ]
@@ -167,13 +158,13 @@ WSGI_APPLICATION = 'tra_ratings.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
+"""DATABASES = {
     'default': dj_database_url.config(
         default='postgresql://mgeorge46:QxiI5SKTQybURywj0Xfgql9SNaHb26Jd@dpg-cvk61ihr0fns739nkr30-a.frankfurt-postgres.render.com/ratings_prd01',
         conn_max_age=600)
-}
+}"""
 
-"""DATABASES = {
+DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('DATABASE_NAME'),
@@ -182,23 +173,39 @@ DATABASES = {
         'HOST': config('DATABASE_HOST'),
         'PORT': config('DATABASE_PORT', default='5432'),
     }
-}"""
+}
 
 
 # Celery config
-CELERY_BROKER_URL = f'redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0'
+CELERY_BROKER_URL = 'amqp://guest:Heaven2870!@localhost:5672//'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 
 CELERY_BEAT_SCHEDULE = {
-    'cache_top_raters': {
-        'task': 'notifications.tasks.cache_top_contributors',
-        'schedule': crontab(day_of_week='sunday', hour=17, minute=0),
+    'compute-average-ratings': {
+        'task': 'rating.tasks.compute_average_ratings_task',
+        'schedule': timedelta(seconds=2),
     },
-    'weekly_notify_top_raters': {
-        'task': 'notifications.tasks.send_weekly_top_rater_notifications',
-        'schedule': crontab(day_of_week='sunday', hour=18, minute=0),
+    'clear_cache_search': {
+        'task': 'rating.tasks.clear_cache_task',
+        'schedule': timedelta(seconds=600),
+    },
+    'top_contributors_not': {
+        'task': 'tra_not.tasks.cache_top_contributors',
+        'schedule': timedelta(seconds=3),
+    },
+    'weekly_top_rater_not': {
+        'task': 'tra_not.tasks.send_weekly_top_rater_notifications',
+        'schedule': timedelta(seconds=2),
+    },
+    'weekly_bonus': {
+        'task': 'points.tasks.award_weekly_bonus',
+        'schedule': timedelta(seconds=3),
+    },
+    'weekly_activity_drop_not': {
+        'task': 'points.tasks.check_weekly_activity_drop',
+        'schedule': timedelta(seconds=2),
     },
 }
 
@@ -250,9 +257,6 @@ if not DEBUG:
     # and renames the files with unique names for each version to support long-term caching
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'

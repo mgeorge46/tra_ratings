@@ -1,4 +1,9 @@
 from django.http import JsonResponse
+from django.http import JsonResponse
+import json
+from django.views import View
+from django.conf import settings
+import os
 
 def manifest_json(request):
     return JsonResponse({
@@ -16,3 +21,11 @@ def manifest_json(request):
             }
         ]
     })
+
+
+
+class ManifestView(View):
+    def get(self, request):
+        with open(os.path.join(settings.BASE_DIR, 'static/tra_ratings/manifest.json')) as f:
+            data = json.load(f)
+        return JsonResponse(data, content_type='application/manifest+json')

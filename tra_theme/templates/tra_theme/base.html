@@ -4,281 +4,298 @@
     {% load static %}
     <meta charset="UTF-8">
     <title>{% block title %}Transport Ratings{% endblock %}</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="#2196f3" name="theme-color">
-    <meta content="Rate public transport services and get rewarded." name="description">
-    <meta content="yes" name="apple-mobile-web-app-capable">
-    <meta content="yes" name="mobile-web-app-capable">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="description" content="Rate public transport services and get rewarded.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
 
-    <!-- Manifest & Icons -->
-    <link href="{% static 'tra_ratings/manifest.json' %}" rel="manifest">
-    <link href="{% static 'icons/icon-192x192.png' %}" rel="icon" type="image/png">
-    <link href="{% static 'icons/icon-192x192.png' %}" rel="apple-touch-icon">
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js"></script>
-
-    <script>
-        const firebaseConfig = {
-          apiKey: "YOUR_API_KEY",
-          authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-          projectId: "YOUR_PROJECT_ID",
-          storageBucket: "YOUR_PROJECT_ID.appspot.com",
-          messagingSenderId: "YOUR_SENDER_ID",
-          appId: "YOUR_APP_ID",
-          measurementId: "YOUR_MEASUREMENT_ID"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const messaging = firebase.messaging();
-    </script>
 
     <!-- Styles -->
     <style>
         body {
-          margin: 0;
-          font-family: Arial, sans-serif;
-          background-color: #f9f9f9;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
         }
 
         .navbar {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 12px 20px;
-          background: linear-gradient(90deg, #1e3c72, #2a5298); /* attractive dark-blue gradient */
-          color: #fff;
-          position: sticky;
-          top: 0;
-          z-index: 999;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: linear-gradient(90deg, #1e3c72, #2a5298);
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 999;
         }
 
         .nav-right {
-          display: flex;
-          align-items: center;
-          gap: 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
 
         .nav-right a {
-          color: #fff;
-          text-decoration: none;
-          font-weight: 500;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
         }
 
         .nav-right a:hover {
-          text-decoration: underline;
+            text-decoration: underline;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            color: black;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            z-index: 1000;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 10px 14px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown > a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
         }
 
         .container {
-          padding: 20px;
+            padding: 20px;
         }
 
         footer {
-          margin-top: 40px;
-          padding: 15px;
-          text-align: center;
-          font-size: 14px;
-          color: #fff;
-          background: linear-gradient(90deg, #4e54c8, #8f94fb); /* attractive soft purple gradient */
+            margin-top: 40px;
+            padding: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #fff;
+            background: linear-gradient(90deg, #4e54c8, #8f94fb);
         }
 
         button.back-btn {
-          margin: 15px 20px;
-          padding: 6px 12px;
-          background: #555;
-          color: white;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
+            margin: 15px 20px;
+            padding: 6px 12px;
+            background: #555;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         button.back-btn:hover {
-          background: #777;
+            background: #777;
         }
 
         #notify-prompt {
-          background: #f1f1f1;
-          padding: 12px;
-          margin: 20px;
-          border: 1px solid #ccc;
-          border-radius: 6px;
+            background: #f1f1f1;
+            padding: 12px;
+            margin: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
         }
 
         #notify-prompt button {
-          margin-top: 8px;
-          padding: 6px 10px;
-          background: #2196f3;
-          color: white;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
+            margin-top: 8px;
+            padding: 6px 10px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         #notify-prompt button:hover {
-          background: #1976d2;
+            background: #1976d2;
+        }
+
+        .alert-box {
+            position: relative;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-box .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            color: #155724;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .alert-box .close-btn:hover {
+            color: #0b2e13;
         }
     </style>
 </head>
 <body>
 
-<!-- Navigation Bar -->
+<!-- Top Navbar -->
 <div class="navbar">
     <div class="nav-right">
-
         {% if user.is_authenticated %}
-        <a href="{% url 'wizard_step_motormake' %}">🏠 Home</a>
-        <a href="{% url 'wizard_step_motormake' %}">⭐ Rate</a>
-        <a href="{% url 'dashboard' %}">📝 Dashboard</a>
-        <a href="{% url 'template_list' %}">📝 Templates</a>
-        <a href="{% url 'logout' %}">🚪 Logout</a>
-        {% else %}
-        <a href="{% url 'login' %}">🔐 Login</a>
-        <a href="{% url 'register' %}">📝 Register</a>
-
-        {% endif %}
-
-        <style>
-            .alert-box {
-              position: relative;
-              padding: 15px 20px;
-              margin-bottom: 15px;
-              border-radius: 6px;
-              background-color: #d4edda;
-              color: #155724;
-              border: 1px solid #c3e6cb;
-            }
-
-            .alert-box .close-btn {
-              position: absolute;
-              top: 8px;
-              right: 12px;
-              color: #155724;
-              font-size: 20px;
-              font-weight: bold;
-              cursor: pointer;
-            }
-
-            .alert-box .close-btn:hover {
-              color: #0b2e13;
-            }
-        </style>
-        {% if messages %}
-        <div class="container">
-            {% for message in messages %}
-            <div class="alert-box">
-                <span class="close-btn" onclick="this.parentElement.style.display='none';">&times;</span>
-                {{ message }}
+            <a href="{% url 'wizard_step_motormake' %}">🏠 Home</a>
+            <a href="{% url 'wizard_step_motormake' %}">⭐ Rate</a>
+            <a href="{% url 'dashboard' %}">📝 Dashboard</a>
+            <a href="{% url 'template_list' %}">📝 Templates</a>
+            <div class="dropdown">
+                <a href="javascript:void(0)">👤 My Account ▼</a>
+                <div class="dropdown-content">
+                    <a href="#">My Profile</a>
+                    <a href="#">Support</a>
+                    <a href="#">Settings</a>
+                </div>
             </div>
-            {% endfor %}
-        </div>
+            <a href="{% url 'logout' %}">🚪 Logout</a>
+        {% else %}
+            <a href="{% url 'login' %}">🔐 Login</a>
+            <a href="{% url 'register' %}">📝 Register</a>
         {% endif %}
     </div>
-
-
 </div>
 
-<!-- Back Button -->
-<button class="back-btn" onclick="window.history.back()">⬅ Back</button>
+<!-- Messages -->
+{% if messages %}
+    <div class="container">
+        {% for message in messages %}
+        <div class="alert-box">
+            <span class="close-btn" onclick="this.parentElement.style.display='none';">&times;</span>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
+<!-- Back Button -->
+{% if user.is_authenticated %}
+<button class="back-btn" onclick="window.history.back()">⬅ Back</button>
+{% endif %}
 <!-- Page Content -->
 <div class="container">
     {% block content %}
     {% endblock %}
 </div>
 
-<!-- Notification Prompt -->
-<div id="notify-prompt" style="display: none;">
-    <p><strong>Allow Notifications?</strong><br>We’ll alert you when you win points or bonuses!</p>
-    <button id="acceptNotify">Allow</button>
-</div>
+
 
 <!-- Footer -->
 <footer>
     &copy; {{ year|default:"2025" }} Transport Ratings App. All rights reserved.
 </footer>
 
-<!-- Notification Setup -->
+<!-- Notification Setup Script -->
 <script>
     if ('Notification' in window && navigator.serviceWorker) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(reg => {
-            console.log('✅ Service Worker registered', reg);
-          })
-          .catch(err => {
-            console.error('❌ SW registration failed', err);
-          });
-
-        if (Notification.permission === 'default') {
-          document.getElementById('notify-prompt').style.display = 'block';
-
-          document.getElementById('acceptNotify').addEventListener('click', () => {
-            Notification.requestPermission().then(permission => {
-              if (permission === 'granted') {
-                messaging.getToken({ vapidKey: "YOUR_PUBLIC_VAPID_KEY" }).then(token => {
-                  fetch('/api/save-token/', {
-                    method: 'POST',
-                    body: JSON.stringify({ token }),
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'X-CSRFToken': '{{ csrf_token }}'
-                    }
-                  }).then(() => {
-                    console.log("📲 Token saved successfully");
-                  });
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(reg => {
+                    console.log('✅ Service Worker registered', reg);
+                })
+                .catch(err => {
+                    console.error('❌ SW registration failed', err);
                 });
-              }
-              document.getElementById('notify-prompt').style.display = 'none';
-            });
-          });
-        }
-      });
+
+            if (Notification.permission === 'default') {
+                document.getElementById('notify-prompt').style.display = 'block';
+
+                document.getElementById('acceptNotify').addEventListener('click', () => {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            messaging.getToken({ vapidKey: "YOUR_PUBLIC_VAPID_KEY" }).then(token => {
+                                fetch('/api/save-token/', {
+                                    method: 'POST',
+                                    body: JSON.stringify({ token }),
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': '{{ csrf_token }}'
+                                    }
+                                }).then(() => {
+                                    console.log("📲 Token saved successfully");
+                                });
+                            });
+                        }
+                        document.getElementById('notify-prompt').style.display = 'none';
+                    });
+                });
+            }
+        });
     }
 </script>
 
 <!-- PWA Install Prompt -->
 <script>
     let deferredPrompt;
-
     window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
+        e.preventDefault();
+        deferredPrompt = e;
 
-      const installBtn = document.createElement('button');
-      installBtn.innerText = "📲 Install App";
-      installBtn.style = `
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        padding: 10px 15px;
-        background: #2196f3;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        z-index: 10000;
-      `;
+        const installBtn = document.createElement('button');
+        installBtn.innerText = "📲 Install App";
+        installBtn.style = `
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 10000;
+        `;
 
-      installBtn.onclick = () => {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choice) => {
-          if (choice.outcome === 'accepted') {
-            console.log('✅ App installed');
-          } else {
-            console.log('❌ Install dismissed');
-          }
-          installBtn.remove();
-          deferredPrompt = null;
-        });
-      };
+        installBtn.onclick = () => {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choice) => {
+                if (choice.outcome === 'accepted') {
+                    console.log('✅ App installed');
+                } else {
+                    console.log('❌ Install dismissed');
+                }
+                installBtn.remove();
+                deferredPrompt = null;
+            });
+        };
 
-      document.body.appendChild(installBtn);
+        document.body.appendChild(installBtn);
     });
 </script>
 
-<!-- Main App JS -->
+<!-- Main JS -->
 <script src="{% static 'js/main.js' %}"></script>
+
 
 </body>
 </html>
+

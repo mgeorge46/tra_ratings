@@ -71,7 +71,7 @@ def check_weekly_activity_drop():
     last_week = Rating.objects.filter(created_at__range=[now - timedelta(days=14), now - timedelta(days=7)]).count()
 
     if last_week > 0 and this_week < (0.5 * last_week):  # >50% drop
-        msg = f"⚠️ Ratings dropped by more than 50%.\nLast week: {last_week}, This week: {this_week}."
+        msg = f"Ratings dropped by more than 50%.\nLast week: {last_week}, This week: {this_week}."
         mail_admins("Alert: Rating Activity Drop", msg)
 
 

@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
-from redis import Redis
-from django.conf import settings
+from django.core.cache import cache
 from celery import shared_task
 from firebase_admin import messaging
 from points.models import Points
@@ -8,31 +7,28 @@ from tra_not.models import FirebaseDeviceToken
 
 User = get_user_model()
 
-r = Redis(
-    host=settings.REDIS_HOST,
-    port=settings.REDIS_PORT,
-    password=settings.REDIS_PASSWORD,
-    ssl=True
-)
+TOP_CONTRIBUTORS_CACHE_KEY = "top_contributors"
+TOP_CONTRIBUTORS_LIMIT = 10
 
 @shared_task
 def cache_top_contributors():
-    top_users = Points.objects.order_by('-weekly_points')[:10]
-    r.delete("top_contributors")
+    top_users = Points.objects.order_by('-points')[:TOP_CONTRIBUTORS_LIMIT]
 
-    for user_points in top_users:
-        user_id = str(user_points.user_id)
-        r.hset("top_contributors", user_id, user_points.weekly_points)
-
+    # Use Django cache framework
+    contributors = {
+        str(user_points.user_id): user_points.points
+        for user_points in top_users
+    }
+    cache.set(TOP_CONTRIBUTORS_CACHE_KEY, contributors, timeout=None)  # No expiry
     print("Top contributors cached.")
 
 
 @shared_task
 def send_weekly_top_rater_notifications():
-    cached_data = r.hgetall("top_contributors")
+    cached_data = cache.get(TOP_CONTRIBUTORS_CACHE_KEY, {})
 
-    for user_id, score in cached_data.items():
-        user_id = int(user_id)
+    for user_id_str, score in cached_data.items():
+        user_id = int(user_id_str)
         tokens = FirebaseDeviceToken.objects.filter(user_id=user_id).values_list('token', flat=True)
 
         for token in tokens:

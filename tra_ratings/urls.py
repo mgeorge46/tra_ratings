@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.shortcuts import render
 from django.urls import path, include
 from django.views.generic import TemplateView
+from tra_theme.views import ManifestView
 
 
 def custom_404(request, exception):
@@ -21,6 +22,9 @@ def custom_403(request, exception):
 handler404 = custom_404
 handler500 = custom_500
 handler403 = custom_403
+
+path('manifest.json', ManifestView.as_view(), name='manifest'),
+
 
 urlpatterns = [
                   path('admin/', admin.site.urls),
