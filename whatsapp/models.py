@@ -20,3 +20,6 @@ class WhatsappLog(models.Model):
         return f"Message to {self.recipient} - Status: {self.api_status_code}"
 
 
+
+
+

@@ -38,6 +38,7 @@ ENABLE_BONUS_SMS = True
 ENABLE_BONUS_EMAIL = True
 WHATSAPP_API_KEY = 'uy983y5hkhoieyf89y5894y584jhoiufguqigho4y0574i4'
 
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -58,6 +59,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'crispy_bootstrap5',
     'django_ckeditor_5',
+    'django_celery_results',
     # Required by allauth
     'django.contrib.sites',
     'allauth',
@@ -74,7 +76,7 @@ CKEDITOR_5_CONFIGS = {
         'toolbar': ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote'],
     }
 }
-
+CELERY_RESULT_BACKEND = 'django-db'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
@@ -86,11 +88,7 @@ AUTHENTICATION_BACKENDS = [
     'accounts.backends.EmailOrPhoneBackend',  # Custom backend
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-SITE_ID = 1  # Ensure this matches your database setup
-# Allauth settings
-# ACCOUNT_AUTHENTICATION_METHOD = 'email'  # You can allow both email/username if needed
-# ACCOUNT_EMAIL_REQUIRED = True
-# ACCOUNT_USERNAME_REQUIRED = False
+SITE_ID = 1
 SOCIALACCOUNT_QUERY_EMAIL = True
 
 ACCOUNT_LOGIN_METHODS = {'email'}  # replaces ACCOUNT_AUTHENTICATION_METHOD
@@ -130,9 +128,6 @@ CACHES = {
     }
 }
 
-# CORS_ALLOWED_ORIGINS = [
-#  "http://localhost:3000", "*"
-# ]
 
 ROOT_URLCONF = 'tra_ratings.urls'
 
@@ -164,6 +159,8 @@ WSGI_APPLICATION = 'tra_ratings.wsgi.application'
         conn_max_age=600)
 }"""
 
+import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -174,10 +171,8 @@ DATABASES = {
         'PORT': config('DATABASE_PORT', default='5432'),
     }
 }
-
-
 # Celery config
-CELERY_BROKER_URL = 'amqp://guest:Heaven2870!@localhost:5672//'
+CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 

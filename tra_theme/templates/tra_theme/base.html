@@ -175,9 +175,10 @@
                     <a href="#">My Profile</a>
                     <a href="#">Support</a>
                     <a href="#">Settings</a>
+                    <a href="{% url 'logout' %}">🚪 Logout</a>
                 </div>
             </div>
-            <a href="{% url 'logout' %}">🚪 Logout</a>
+            <a href="#">Traffic Updates</a>
         {% else %}
             <a href="{% url 'login' %}">🔐 Login</a>
             <a href="{% url 'register' %}">📝 Register</a>
