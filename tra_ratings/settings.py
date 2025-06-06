@@ -25,18 +25,57 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-e=e64wo@c+f+6@x3$ug(z63_a=z4ttlblovq=r3d&8)r@68v*@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+CONN_MAX_AGE = 60  # Keep database connections alive
+#DEBUG = False  # Turn off debug in production
 DEBUG = True
 # settings.py
-
-REDIS_HOST = 'fair-insect-34366.upstash.io'
-REDIS_PORT = 6379
-REDIS_PASSWORD = 'AYY-AAIjcDE2ZWExNzAxMTc5ZDA0YmNmOWQwMjUwMmY1ZDVjMDE5MnAxMA'
-REDIS_SSL = True
 
 ALLOWED_HOSTS = ['*']
 ENABLE_BONUS_SMS = True
 ENABLE_BONUS_EMAIL = True
 WHATSAPP_API_KEY = 'uy983y5hkhoieyf89y5894y584jhoiufguqigho4y0574i4'
+
+# Voice Rating Settings
+VOICE_RATING = {
+    'WAKE_PHRASE': 'my app',
+    'LANGUAGE': 'en-KE',  # Kenyan English for East African accent
+    'MAX_ATTEMPTS': 3,
+    'LISTEN_TIMEOUT': 30,
+}
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'voice_rating.log',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'voice_rating': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+# Channels configuration
+ASGI_APPLICATION = 'tra_ratings.asgi.application'
+
+# For local development, use in-memory channel layer
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
 
 
 # Application definition
@@ -48,19 +87,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'tra_theme.apps.TraThemeConfig',
     'rating.apps.RatingConfig',
     'sms_app.apps.SmsAppConfig',
     'points.apps.PointsConfig',
-    'whatsapp.apps.WhatsappConfig',
+    'voice_rating',
     'corsheaders',
     'accounts.apps.AccountsConfig',
     'rest_framework',
     'crispy_forms',
+    'channels',
     'crispy_bootstrap4',
     'crispy_bootstrap5',
     'django_ckeditor_5',
     'django_celery_results',
-    # Required by allauth
     'django.contrib.sites',
     'allauth',
     'allauth.account',
@@ -68,9 +108,23 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',  # For Google login
     'allauth.socialaccount.providers.facebook',  # For Facebook login
     'django_celery_beat',
-    'tra_theme.apps.TraThemeConfig',
-    'tra_not.apps.TraNotConfig',
 ]
+
+# Voice Rating Settings (already in your settings)
+VOICE_RATING = {
+    'WAKE_PHRASE': 'my app,rating,rating app,hey rating',  # Comma-separated
+    'LANGUAGE': 'en-KE',  # Kenyan English
+    'MAX_ATTEMPTS': 3,
+    'LISTEN_TIMEOUT': 30,
+}
+
+# Update logging
+LOGGING['loggers']['voice_rating'] = {
+    'handlers': ['file', 'console'],
+    'level': 'DEBUG',
+    'propagate': True,
+}
+
 CKEDITOR_5_CONFIGS = {
     'default': {
         'toolbar': ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote'],
@@ -273,3 +327,5 @@ PASSWORD_RESET_TIMEOUT = 3600  # Token expires in 1 hour
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+

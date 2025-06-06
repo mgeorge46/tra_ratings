@@ -44,9 +44,3 @@ def validate_ug_plate_format(value):
         raise ValidationError("Invalid Ugandan number plate. Please double-check.")
 
     return formatted
-
-
-
-
-
-

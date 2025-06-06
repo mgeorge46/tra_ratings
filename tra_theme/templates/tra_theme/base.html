@@ -9,6 +9,47 @@
     <meta name="description" content="Rate public transport services and get rewarded.">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+     <!-- PWA Meta Tags -->
+      <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="TRA Rating">
+    <link rel="apple-touch-icon" href="{% static 'icons/icon-152x152.png' %}">
+
+
+    <!-- Other head content -->
+
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then(registration => console.log('SW registered:', registration))
+                    .catch(error => console.log('SW registration failed:', error));
+            });
+        }
+
+        // PWA Install Prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Show install button
+            const installBtn = document.getElementById('install-pwa');
+            if (installBtn) {
+                installBtn.style.display = 'block';
+                installBtn.addEventListener('click', () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                        }
+                        deferredPrompt = null;
+                    });
+                });
+            }
+        });
+    </script>
 
 
     <!-- Styles -->
@@ -158,6 +199,8 @@
             color: #0b2e13;
         }
     </style>
+
+
 </head>
 <body>
 
@@ -178,6 +221,7 @@
                     <a href="{% url 'logout' %}">🚪 Logout</a>
                 </div>
             </div>
+            <a href="#">Voice Rating</a>
             <a href="#">Traffic Updates</a>
         {% else %}
             <a href="{% url 'login' %}">🔐 Login</a>

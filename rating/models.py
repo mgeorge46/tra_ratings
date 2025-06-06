@@ -56,6 +56,7 @@ class Rating(models.Model):
     system_comments = models.TextField(_('System Comment'))
     comment = models.TextField(_('Comments'), null=True, blank=True)
     location = models.CharField(_('Location'), max_length=255)
+    rate_method = models.CharField(_('Method Used'), max_length=25, default='Text')
     device_id = models.CharField(_('Device ID'), max_length=255, null=True, blank=True)
     is_anonymous = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

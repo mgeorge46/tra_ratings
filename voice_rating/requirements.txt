@@ -1,0 +1,23 @@
+# Voice Recognition and Processing
+SpeechRecognition==3.10.0
+pyttsx3==2.90
+pyaudio==0.2.13
+webrtcvad==2.0.10
+numpy==1.24.3
+scipy==1.11.4
+
+# Wake word detection
+pvporcupine==3.0.0  # Free tier available
+
+# Audio processing
+sounddevice==0.4.6
+soundfile==0.12.1
+
+# Django Channels for WebSocket
+channels==4.0.0
+channels-redis==4.1.0
+daphne==4.0.0
+
+# Other dependencies
+python-decouple==3.8
+celery==5.3.4
