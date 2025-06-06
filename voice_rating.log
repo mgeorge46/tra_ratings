@@ -10,3 +10,17 @@ Wake word detected: rating
 Wake word detected: rating
 Wake word detected: rating
 Wake phrases configured: ['my app', 'rating', 'rating app', 'hey rating']
+Wake phrases configured: ['my app', 'rating', 'rating app', 'hey rating']
+Wake phrases configured: ['my app', 'rating', 'rating app', 'hey rating']
+Wake word detected: my app
+Wake phrases configured: ['my app', 'rating', 'rating app', 'hey rating']
+Wake phrases configured: ['my app', 'rating', 'rating app', 'hey rating']
+Wake word detected: my app
+Wake word detection error: This audio source is already inside a context manager
+Wake word detection error: This audio source is already inside a context manager
+Wake phrases configured: ['my app', 'rating', 'rating app', 'hey rating']
+Wake phrases configured: ['my app', 'rating', 'rating app', 'hey rating']
+Wake word detected: my app
+Wake word detected: my app
+TTS Error: run loop already started
+Voice API error: name 'settings' is not defined
