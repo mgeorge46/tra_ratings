@@ -1,10 +1,12 @@
 import re
 from decimal import Decimal
 from django.core.exceptions import ValidationError
+from django.conf import settings  # ADD THIS IMPORT
 from rating.models import MotorCar, Rating, MotorCarConflict, MOTOR_TYPES
 from rating.utils import validate_ug_plate_format
 from .models import VoiceCommand
 import logging
+from django.conf import settings
 
 logger = logging.getLogger('voice_rating')
 

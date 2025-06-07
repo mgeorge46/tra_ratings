@@ -32,11 +32,27 @@ class VoiceEngine:
         if not hasattr(self, 'initialized'):
             self.recognizer = sr.Recognizer()
             self.microphone = sr.Microphone()
-            self.tts_engine = pyttsx3.init()
+            self.tts_engine = None
+            self.tts_lock = threading.Lock()  # Add lock for TTS operations
             self.command_queue = queue.Queue()
             self.is_listening = False
             self.wake_word_detector = None
             self.session_manager = SessionManager()
+
+            # Initialize TTS in a thread-safe way
+            self._init_tts()
+
+            # Configure recognizer for better accuracy with accents
+            self.recognizer.energy_threshold = 4000
+            self.recognizer.dynamic_energy_threshold = True
+            self.recognizer.pause_threshold = 0.8
+
+            self.initialized = True
+
+    def _init_tts(self):
+        """Initialize TTS engine in a thread-safe way"""
+        try:
+            self.tts_engine = pyttsx3.init()
 
             # Configure TTS for East African accent compatibility
             voices = self.tts_engine.getProperty('voices')
@@ -49,12 +65,10 @@ class VoiceEngine:
             self.tts_engine.setProperty('rate', 150)  # Slower for better understanding
             self.tts_engine.setProperty('volume', 0.9)
 
-            # Configure recognizer for better accuracy with accents
-            self.recognizer.energy_threshold = 4000
-            self.recognizer.dynamic_energy_threshold = True
-            self.recognizer.pause_threshold = 0.8
-
-            self.initialized = True
+            logger.info("TTS engine initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize TTS engine: {e}")
+            self.tts_engine = None
 
     @classmethod
     def initialize(cls):
@@ -78,22 +92,40 @@ class VoiceEngine:
             logger.error(f"Error setting up wake word detection: {e}")
 
     def speak(self, text, wait=True):
-        """Convert text to speech"""
-        try:
-            self.tts_engine.say(text)
-            if wait:
-                self.tts_engine.runAndWait()
-            else:
-                threading.Thread(target=self.tts_engine.runAndWait).start()
-        except Exception as e:
-            logger.error(f"TTS Error: {e}")
+        """Convert text to speech in a thread-safe way"""
+        if not self.tts_engine:
+            logger.warning("TTS engine not available")
+            return
+
+        def _speak():
+            with self.tts_lock:
+                try:
+                    self.tts_engine.say(text)
+                    self.tts_engine.runAndWait()
+                except Exception as e:
+                    logger.error(f"TTS Error: {e}")
+                    # Try to reinitialize TTS engine if it fails
+                    try:
+                        self.tts_engine.stop()
+                        self._init_tts()
+                    except:
+                        pass
+
+        if wait:
+            _speak()
+        else:
+            threading.Thread(target=_speak, daemon=True).start()
 
     def listen_for_wake_word(self):
         """Listen for wake word in background"""
 
         def _listen():
-            with self.microphone as source:
-                self.recognizer.adjust_for_ambient_noise(source, duration=1)
+            try:
+                with self.microphone as source:
+                    self.recognizer.adjust_for_ambient_noise(source, duration=1)
+            except Exception as e:
+                logger.error(f"Error adjusting microphone: {e}")
+                return
 
             while self.is_listening:
                 try:
@@ -119,9 +151,11 @@ class VoiceEngine:
                     logger.error(f"Wake word detection error: {e}")
                     time.sleep(0.5)
 
-        self.is_listening = True
-        self.listen_thread = threading.Thread(target=_listen, daemon=True)
-        self.listen_thread.start()
+        if not self.is_listening:
+            self.is_listening = True
+            self.listen_thread = threading.Thread(target=_listen, daemon=True)
+            self.listen_thread.start()
+            logger.info("Started listening for wake word")
 
     def listen_for_command(self, timeout=10, prompt=None):
         """Listen for a specific command after wake word"""
@@ -156,8 +190,19 @@ class VoiceEngine:
     def stop_listening(self):
         """Stop the wake word listener"""
         self.is_listening = False
-        if hasattr(self, 'listen_thread'):
+        if hasattr(self, 'listen_thread') and self.listen_thread.is_alive():
             self.listen_thread.join(timeout=2)
+        logger.info("Stopped listening for wake word")
+
+    def cleanup(self):
+        """Clean up resources"""
+        self.stop_listening()
+        with self.tts_lock:
+            if self.tts_engine:
+                try:
+                    self.tts_engine.stop()
+                except:
+                    pass
 
 
 class SessionManager:
@@ -183,6 +228,7 @@ class SessionManager:
             'step': 'motor_type'
         }
 
+        logger.info(f"Created voice session: {session_id}")
         return session_id
 
     def get_session(self, session_id):
@@ -222,6 +268,7 @@ class SessionManager:
             session.state = state
         session.save()
 
+        logger.info(f"Updated session {session_id}: step={step}, state={state}")
         return True
 
     def close_session(self, session_id):
@@ -234,3 +281,5 @@ class SessionManager:
 
             if session_id in self.sessions:
                 del self.sessions[session_id]
+
+            logger.info(f"Closed session {session_id}")
