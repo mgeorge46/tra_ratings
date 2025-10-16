@@ -75,3 +75,5 @@ def check_weekly_activity_drop():
         mail_admins("Alert: Rating Activity Drop", msg)
 
 
+
+

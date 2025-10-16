@@ -28,7 +28,6 @@ path('manifest.json', ManifestView.as_view(), name='manifest'),
 
 urlpatterns = [
                   path('admin/', admin.site.urls),
-                  path('voice/', include('voice_rating.urls')),
                   path('', include('rating.urls')),
                   path('accounts/', include('accounts.urls')),
                   path('api/v1/', include('ext_conn.urls')),

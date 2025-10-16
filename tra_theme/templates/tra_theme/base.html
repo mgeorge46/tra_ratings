@@ -4,52 +4,17 @@
     {% load static %}
     <meta charset="UTF-8">
     <title>{% block title %}Transport Ratings{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#2196f3">
-    <meta name="description" content="Rate public transport services and get rewarded.">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-     <!-- PWA Meta Tags -->
-      <link rel="manifest" href="{% static 'manifest.json' %}">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="TRA Rating">
-    <link rel="apple-touch-icon" href="{% static 'icons/icon-152x152.png' %}">
-
-
-    <!-- Other head content -->
-
-    <script>
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/static/sw.js')
-                    .then(registration => console.log('SW registered:', registration))
-                    .catch(error => console.log('SW registration failed:', error));
-            });
-        }
-
-        // PWA Install Prompt
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            // Show install button
-            const installBtn = document.getElementById('install-pwa');
-            if (installBtn) {
-                installBtn.style.display = 'block';
-                installBtn.addEventListener('click', () => {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('User accepted the install prompt');
-                        }
-                        deferredPrompt = null;
-                    });
-                });
-            }
-        });
-    </script>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="#2196f3" name="theme-color">
+    <meta content="Rate public transport services and get rewarded." name="description">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="yes" name="mobile-web-app-capable">
+    <!-- PWA Meta Tags -->
+    <link href="{% static 'manifest.json' %}" rel="manifest">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="TRA Rating" name="apple-mobile-web-app-title">
+    <link href="{% static 'icons/icon-152x152.png' %}" rel="apple-touch-icon">
 
 
     <!-- Styles -->
@@ -208,38 +173,38 @@
 <div class="navbar">
     <div class="nav-right">
         {% if user.is_authenticated %}
-            <a href="{% url 'wizard_step_motormake' %}">🏠 Home</a>
-            <a href="{% url 'wizard_step_motormake' %}">⭐ Rate</a>
-            <a href="{% url 'dashboard' %}">📝 Dashboard</a>
-            <a href="{% url 'template_list' %}">📝 Templates</a>
-            <div class="dropdown">
-                <a href="javascript:void(0)">👤 My Account ▼</a>
-                <div class="dropdown-content">
-                    <a href="#">My Profile</a>
-                    <a href="#">Support</a>
-                    <a href="#">Settings</a>
-                    <a href="{% url 'logout' %}">🚪 Logout</a>
-                </div>
+        <a href="{% url 'wizard_step_motormake' %}">🏠 Home</a>
+        <a href="{% url 'wizard_step_motormake' %}">⭐ Rate</a>
+        <a href="{% url 'dashboard' %}">📝 Dashboard</a>
+        <a href="{% url 'template_list' %}">📝 Templates</a>
+        <div class="dropdown">
+            <a href="javascript:void(0)">👤 My Account ▼</a>
+            <div class="dropdown-content">
+                <a href="#">My Profile</a>
+                <a href="#">Support</a>
+                <a href="#">Settings</a>
+                <a href="{% url 'logout' %}">🚪 Logout</a>
             </div>
-            <a href="#">Voice Rating</a>
-            <a href="#">Traffic Updates</a>
+        </div>
+        <a href="#">Voice Rating</a>
+        <a href="#">Traffic Updates</a>
         {% else %}
-            <a href="{% url 'login' %}">🔐 Login</a>
-            <a href="{% url 'register' %}">📝 Register</a>
+        <a href="{% url 'login' %}">🔐 Login</a>
+        <a href="{% url 'register' %}">📝 Register</a>
         {% endif %}
     </div>
 </div>
 
 <!-- Messages -->
 {% if messages %}
-    <div class="container">
-        {% for message in messages %}
-        <div class="alert-box">
-            <span class="close-btn" onclick="this.parentElement.style.display='none';">&times;</span>
-            {{ message }}
-        </div>
-        {% endfor %}
+<div class="container">
+    {% for message in messages %}
+    <div class="alert-box">
+        <span class="close-btn" onclick="this.parentElement.style.display='none';">&times;</span>
+        {{ message }}
     </div>
+    {% endfor %}
+</div>
 {% endif %}
 
 <!-- Back Button -->
@@ -253,89 +218,10 @@
 </div>
 
 
-
 <!-- Footer -->
 <footer>
     &copy; {{ year|default:"2025" }} Transport Ratings App. All rights reserved.
 </footer>
-
-<!-- Notification Setup Script -->
-<script>
-    if ('Notification' in window && navigator.serviceWorker) {
-        window.addEventListener('load', function () {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(reg => {
-                    console.log('✅ Service Worker registered', reg);
-                })
-                .catch(err => {
-                    console.error('❌ SW registration failed', err);
-                });
-
-            if (Notification.permission === 'default') {
-                document.getElementById('notify-prompt').style.display = 'block';
-
-                document.getElementById('acceptNotify').addEventListener('click', () => {
-                    Notification.requestPermission().then(permission => {
-                        if (permission === 'granted') {
-                            messaging.getToken({ vapidKey: "YOUR_PUBLIC_VAPID_KEY" }).then(token => {
-                                fetch('/api/save-token/', {
-                                    method: 'POST',
-                                    body: JSON.stringify({ token }),
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRFToken': '{{ csrf_token }}'
-                                    }
-                                }).then(() => {
-                                    console.log("📲 Token saved successfully");
-                                });
-                            });
-                        }
-                        document.getElementById('notify-prompt').style.display = 'none';
-                    });
-                });
-            }
-        });
-    }
-</script>
-
-<!-- PWA Install Prompt -->
-<script>
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-
-        const installBtn = document.createElement('button');
-        installBtn.innerText = "📲 Install App";
-        installBtn.style = `
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            padding: 10px 15px;
-            background: #2196f3;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            z-index: 10000;
-        `;
-
-        installBtn.onclick = () => {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choice) => {
-                if (choice.outcome === 'accepted') {
-                    console.log('✅ App installed');
-                } else {
-                    console.log('❌ Install dismissed');
-                }
-                installBtn.remove();
-                deferredPrompt = null;
-            });
-        };
-
-        document.body.appendChild(installBtn);
-    });
-</script>
 
 <!-- Main JS -->
 <script src="{% static 'js/main.js' %}"></script>

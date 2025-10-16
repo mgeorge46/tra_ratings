@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext as _
-
 from points.models import Points
 from .utils import validate_ug_plate_format
 

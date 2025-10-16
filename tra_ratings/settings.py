@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
-
 import dj_database_url
 from decouple import config
-from celery.schedules import crontab,timedelta
+from datetime import timedelta
+from celery.schedules import crontab
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -28,44 +28,11 @@ SECRET_KEY = 'django-insecure-e=e64wo@c+f+6@x3$ug(z63_a=z4ttlblovq=r3d&8)r@68v*@
 CONN_MAX_AGE = 60  # Keep database connections alive
 #DEBUG = False  # Turn off debug in production
 DEBUG = True
-# settings.py
 
 ALLOWED_HOSTS = ['*']
 ENABLE_BONUS_SMS = True
 ENABLE_BONUS_EMAIL = True
 WHATSAPP_API_KEY = 'uy983y5hkhoieyf89y5894y584jhoiufguqigho4y0574i4'
-
-# Voice Rating Settings
-VOICE_RATING = {
-    'WAKE_PHRASE': 'my app',
-    'LANGUAGE': 'en-KE',  # Kenyan English for East African accent
-    'MAX_ATTEMPTS': 3,
-    'LISTEN_TIMEOUT': 30,
-}
-
-# Logging configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'voice_rating.log',
-        },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'voice_rating': {
-            'handlers': ['file', 'console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
 
 # Channels configuration
 ASGI_APPLICATION = 'tra_ratings.asgi.application'
@@ -88,10 +55,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tra_theme.apps.TraThemeConfig',
+    'tra_not.apps.TraNotConfig',
     'rating.apps.RatingConfig',
     'sms_app.apps.SmsAppConfig',
     'points.apps.PointsConfig',
-    'voice_rating',
     'corsheaders',
     'accounts.apps.AccountsConfig',
     'rest_framework',
@@ -110,29 +77,12 @@ INSTALLED_APPS = [
     'django_celery_beat',
 ]
 
-# Voice Rating Settings (already in your settings)
-VOICE_RATING = {
-    'WAKE_PHRASE': 'my app,rating,rating app,hey rating',  # Comma-separated
-    'LANGUAGE': 'en-KE',  # Kenyan English
-    'MAX_ATTEMPTS': 3,
-    'LISTEN_TIMEOUT': 30,
-}
-
-# Update logging
-LOGGING['loggers']['voice_rating'] = {
-    'handlers': ['file', 'console'],
-    'level': 'DEBUG',
-    'propagate': True,
-}
-
 CKEDITOR_5_CONFIGS = {
     'default': {
         'toolbar': ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote'],
     }
 }
 CELERY_RESULT_BACKEND = 'django-db'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
 
 
 AUTH_USER_MODEL = "accounts.CustomUser"
@@ -213,7 +163,7 @@ WSGI_APPLICATION = 'tra_ratings.wsgi.application'
         conn_max_age=600)
 }"""
 
-import os
+
 
 DATABASES = {
     'default': {
@@ -226,7 +176,7 @@ DATABASES = {
     }
 }
 # Celery config
-CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+CELERY_BROKER_URL = 'amqp://guest:Heaven2870!@localhost:5672//'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
@@ -234,7 +184,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     'compute-average-ratings': {
         'task': 'rating.tasks.compute_average_ratings_task',
-        'schedule': timedelta(seconds=2),
+        'schedule': timedelta(seconds=200),
     },
     'clear_cache_search': {
         'task': 'rating.tasks.clear_cache_task',
@@ -242,19 +192,19 @@ CELERY_BEAT_SCHEDULE = {
     },
     'top_contributors_not': {
         'task': 'tra_not.tasks.cache_top_contributors',
-        'schedule': timedelta(seconds=3),
+        'schedule': timedelta(seconds=300),
     },
     'weekly_top_rater_not': {
         'task': 'tra_not.tasks.send_weekly_top_rater_notifications',
-        'schedule': timedelta(seconds=2),
+        'schedule': timedelta(seconds=200),
     },
     'weekly_bonus': {
         'task': 'points.tasks.award_weekly_bonus',
-        'schedule': timedelta(seconds=3),
+        'schedule': timedelta(seconds=300),
     },
     'weekly_activity_drop_not': {
         'task': 'points.tasks.check_weekly_activity_drop',
-        'schedule': timedelta(seconds=2),
+        'schedule': timedelta(seconds=200),
     },
 }
 
@@ -327,5 +277,6 @@ PASSWORD_RESET_TIMEOUT = 3600  # Token expires in 1 hour
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 
