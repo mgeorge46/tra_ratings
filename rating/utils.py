@@ -1,46 +1,45 @@
 from cryptography.fernet import Fernet
 import base64
-from django.conf import settings
 import re
+from django.conf import settings
 from django.core.exceptions import ValidationError
 
-# Use a unique key for encryption (set this in your settings.py)
+# Derive a Fernet key from your Django SECRET_KEY (use a separate key in production!)
 SECRET_KEY = settings.SECRET_KEY[:32]
 CIPHER = Fernet(base64.urlsafe_b64encode(SECRET_KEY.encode()))
 
-def encrypt_data(data):
+def encrypt_data(data: str) -> str:
+    """Encrypt a string using Fernet encryption."""
     return CIPHER.encrypt(data.encode()).decode()
 
-def decrypt_data(data):
+def decrypt_data(data: str) -> str:
+    """Decrypt a string previously encrypted with encrypt_data()."""
     return CIPHER.decrypt(data.encode()).decode()
 
-# Combined format regex: handles old and new formats
-import re
-from django.core.exceptions import ValidationError
-
-# Legacy: UAR1234L
+# Regular expressions covering both old and new private-vehicle plate formats.
+# Legacy format: UAR 1234L → starts with 'U', then two letters, 3–4 digits, and one letter.
 LEGACY_PLATE_REGEX = re.compile(r'^U[A-Z]{2}[0-9]{3,4}[A-Z]$')
 
-# New: UA123MG
+# New format: UA 123MG → starts with 'U', one letter, 3 digits, and two letters.
 NEW_PLATE_REGEX = re.compile(r'^U[A-Z][0-9]{3}[A-Z]{2}$')
 
-def validate_ug_plate_format(value):
+def validate_ug_plate_format(value: str) -> str:
     """
-    Smart validator for Ugandan number plates:
-    - Legacy format: UAR 1234L → 3-letter prefix, 3–4 digits, 1-letter suffix
-    - New format: UA 123MG → 2-letter prefix, 3 digits, 2-letter suffix
-    - Accepts input with inconsistent spacing, casing, or formatting
+    Normalise and validate a Ugandan number plate.
+    Accepts input with inconsistent spacing or casing, matches both legacy
+    (e.g. 'UDS164M' or 'UDS 164M') and new (e.g. 'UA123MG' or 'UA 123MG')
+    formats.  Returns a canonicalised plate (with a space inserted after
+    the prefix) if valid, or raises ValidationError otherwise.
     """
+    # Remove whitespace and convert to uppercase
+    cleaned = re.sub(r'\s+', '', value).upper()
 
-    # Step 1: Normalize input
-    cleaned = re.sub(r'\s+', '', value.upper())  # e.g., ' ua 07 5ak ' → 'UA075AK'
-
-    # Step 2: Match correct pattern
     if LEGACY_PLATE_REGEX.match(cleaned):
-        formatted = f"{cleaned[:3]} {cleaned[3:]}"  # E.g., UAR1234L → UAR 1234L
-    elif NEW_PLATE_REGEX.match(cleaned):
-        formatted = f"{cleaned[:2]} {cleaned[2:5]}{cleaned[5:]}"  # E.g., UA075AK → UA 075AK
-    else:
-        raise ValidationError("Invalid Ugandan number plate. Please double-check.")
+        # Insert a space after the three-letter prefix: UAA1234L -> UAA 1234L
+        return f"{cleaned[:3]} {cleaned[3:]}"
+    if NEW_PLATE_REGEX.match(cleaned):
+        # Insert a space after the two-character prefix: UA123MG -> UA 123MG
+        return f"{cleaned[:2]} {cleaned[2:5]}{cleaned[5:]}"
 
-    return formatted
+    # If neither pattern matches, raise a validation error
+    raise ValidationError("Invalid Ugandan number plate. Please double-check.")

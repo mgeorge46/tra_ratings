@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'rating.apps.RatingConfig',
     'sms_app.apps.SmsAppConfig',
     'points.apps.PointsConfig',
+    'plate_ocr.apps.PlateOcrConfig',
     'corsheaders',
     'accounts.apps.AccountsConfig',
     'rest_framework',

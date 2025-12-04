@@ -37,5 +37,7 @@ urlpatterns = [
                   path('mobile/', include('tra_theme.urls')),
                   path('service-worker.js', TemplateView.as_view(template_name="tra_ratings/service-worker.js", content_type="application/javascript"),
                        name='service-worker.js'),
+                  path('photo/rating/', include('plate_ocr.urls')),
                   path('offline/', TemplateView.as_view(template_name="tra_ratings/offline.html"), name='offline'),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

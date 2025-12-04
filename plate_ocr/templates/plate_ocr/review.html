@@ -1,0 +1,339 @@
+{% extends "tra_theme/base.html" %}
+{% load static %}
+
+{% block title %}Review Your Rating{% endblock %}
+
+{% block extra_css %}
+<style>
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .step-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #dee2e6;
+    }
+    
+    .step-dot.active {
+        background: #0d6efd;
+    }
+    
+    .step-dot.completed {
+        background: #28a745;
+    }
+    
+    .review-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .plate-display {
+        background: linear-gradient(145deg, #ffd700, #ffec8b);
+        color: #000;
+        font-size: 1.8rem;
+        font-weight: bold;
+        letter-spacing: 3px;
+        padding: 15px 25px;
+        border-radius: 8px;
+        border: 4px solid #000;
+        display: inline-block;
+        font-family: 'Arial Black', sans-serif;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        margin-bottom: 1rem;
+    }
+    
+    .motor-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.95rem;
+    }
+    
+    .rating-display {
+        margin: 1.5rem 0;
+    }
+    
+    .rating-stars {
+        font-size: 2rem;
+        color: #ffc107;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .rating-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+    
+    .comment-section {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .comment-label {
+        font-size: 0.85rem;
+        opacity: 0.8;
+        margin-bottom: 0.5rem;
+    }
+    
+    .comment-text {
+        font-size: 1.1rem;
+    }
+    
+    .method-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.25);
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+    
+    .detail-label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .detail-value {
+        font-weight: 600;
+        text-align: right;
+    }
+    
+    .edit-link {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+    }
+    
+    .edit-link:hover {
+        color: white;
+    }
+    
+    .submit-section {
+        text-align: center;
+        padding: 1rem 0;
+    }
+    
+    .btn-submit {
+        padding: 15px 50px;
+        font-size: 1.1rem;
+        border-radius: 30px;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .confirmation-note {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .confirmation-note i {
+        color: #856404;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step-dot completed"></div>
+                <div class="step-dot completed"></div>
+                <div class="step-dot completed"></div>
+                <div class="step-dot active"></div>
+            </div>
+            
+            <h4 class="text-center mb-4">Review Your Rating</h4>
+            
+            <!-- Main Review Card -->
+            <div class="review-card position-relative">
+                <span class="method-badge">
+                    {% if wizard_data.input_method == 'photo' %}
+                        📷 Photo
+                    {% elif wizard_data.input_method == 'voice' %}
+                        🎤 Voice
+                    {% else %}
+                        ⌨️ Text
+                    {% endif %}
+                </span>
+                
+                <div class="text-center">
+                    <!-- Plate Number -->
+                    <div class="plate-display">
+                        {{ wizard_data.plate_number }}
+                    </div>
+                    
+                    <!-- Motor Type -->
+                    <div>
+                        <span class="motor-type-badge">
+                            {% if wizard_data.motor_type == 'motorcycle' %}
+                                🏍️ Boda Boda
+                            {% elif wizard_data.motor_type == 'car' %}
+                                🚗 Car
+                            {% elif wizard_data.motor_type == 'taxi' %}
+                                🚕 Taxi
+                            {% elif wizard_data.motor_type == 'bus' %}
+                                🚌 Bus
+                            {% elif wizard_data.motor_type == 'truck' %}
+                                🚛 Truck
+                            {% elif wizard_data.motor_type == 'tuku' %}
+                                🛺 Tuku Tuku
+                            {% elif wizard_data.motor_type == 'coaster' %}
+                                🚐 Coaster
+                            {% elif wizard_data.motor_type == 'van' %}
+                                🚙 Van
+                            {% else %}
+                                🚘 {{ wizard_data.motor_type|title }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <!-- Rating Stars -->
+                    <div class="rating-display">
+                        <span class="rating-stars">
+                            {% with rating=wizard_data.rating|floatformat:0|add:0 %}
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= rating %}
+                                        ★
+                                    {% else %}
+                                        ☆
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        </span>
+                        <span class="rating-value">{{ wizard_data.rating }}/5</span>
+                    </div>
+                    
+                    <!-- Comment -->
+                    {% if wizard_data.comment %}
+                    <div class="comment-section">
+                        <div class="comment-label">Your Feedback:</div>
+                        <div class="comment-text">"{{ wizard_data.comment }}"</div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'plate_ocr:photo_rating_wizard' %}?step=capture" class="edit-link">
+                        <i class="bi bi-pencil"></i> Edit Rating
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Additional Details -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h6 class="card-title text-muted mb-3">Rating Details</h6>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Plate Number</span>
+                        <span class="detail-value">{{ wizard_data.plate_number }}</span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Vehicle Type</span>
+                        <span class="detail-value">{{ wizard_data.motor_type|title }}</span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Your Rating</span>
+                        <span class="detail-value">{{ wizard_data.rating }} out of 5</span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Input Method</span>
+                        <span class="detail-value">
+                            {% if wizard_data.input_method == 'photo' %}
+                                Photo Capture
+                            {% elif wizard_data.input_method == 'voice' %}
+                                Voice Input
+                            {% else %}
+                                Manual Entry
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    {% if wizard_data.location %}
+                    <div class="detail-row">
+                        <span class="detail-label">Location</span>
+                        <span class="detail-value">{{ wizard_data.location }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Confirmation Note -->
+            <div class="confirmation-note">
+                <i class="bi bi-info-circle me-2"></i>
+                By submitting, you confirm this is an honest rating based on your experience with this driver.
+            </div>
+            
+            <!-- Submit Section -->
+            <form method="post" id="reviewForm">
+                {% csrf_token %}
+                <input type="hidden" name="confirm" value="true">
+                
+                <div class="submit-section">
+                    <button type="submit" class="btn btn-success btn-submit">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Submit Rating
+                    </button>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'plate_ocr:photo_rating_wizard' %}?step=rate" class="text-muted">
+                        <i class="bi bi-arrow-left"></i> Go Back
+                    </a>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('reviewForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,223 @@
+{% extends "tra_theme/base.html" %}
+{% load static %}
+
+{% block title %}Confirm Number Plate{% endblock %}
+
+{% block extra_css %}
+<style>
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .step-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #dee2e6;
+    }
+    
+    .step-dot.active {
+        background: #0d6efd;
+    }
+    
+    .step-dot.completed {
+        background: #28a745;
+    }
+    
+    .plate-display {
+        background: linear-gradient(145deg, #ffd700, #ffec8b);
+        color: #000;
+        font-size: 2rem;
+        font-weight: bold;
+        letter-spacing: 4px;
+        padding: 20px 30px;
+        border-radius: 8px;
+        border: 4px solid #000;
+        display: inline-block;
+        font-family: 'Arial Black', sans-serif;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        margin: 1rem 0;
+    }
+    
+    .confidence-bar {
+        height: 8px;
+        border-radius: 4px;
+        background: #e9ecef;
+        margin-top: 1rem;
+        overflow: hidden;
+    }
+    
+    .confidence-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+    
+    .confidence-high { background: #28a745; }
+    .confidence-medium { background: #ffc107; }
+    .confidence-low { background: #dc3545; }
+    
+    .confidence-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+    }
+    
+    .action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 1.5rem;
+    }
+    
+    .action-btn {
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .correction-form {
+        display: none;
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .correction-form.active {
+        display: block;
+    }
+    
+    .correction-input {
+        font-size: 1.3rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step-dot completed"></div>
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Confirm Number Plate
+                    </h5>
+                </div>
+                
+                <div class="card-body text-center">
+                    <p class="text-muted mb-3">Is this the correct number plate?</p>
+                    
+                    <!-- Extracted Plate Display -->
+                    <div class="plate-display" id="plateDisplay">
+                        {{ extracted_plate }}
+                    </div>
+                    
+                    <!-- Confidence Bar -->
+                    {% if confidence %}
+                    <div class="confidence-bar">
+                        <div class="confidence-fill {% if confidence >= 0.8 %}confidence-high{% elif confidence >= 0.5 %}confidence-medium{% else %}confidence-low{% endif %}"
+                             style="width: {{ confidence|floatformat:0 }}%"></div>
+                    </div>
+                    <div class="confidence-label">
+                        Recognition confidence: {{ confidence|floatformat:0 }}%
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" id="confirmForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="extracted_plate" value="{{ extracted_plate }}">
+                        <input type="hidden" name="confidence" value="{{ confidence|default:0.5 }}">
+                        <input type="hidden" name="action" id="actionInput" value="confirm">
+                        
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-success action-btn" id="confirmBtn">
+                                <i class="bi bi-check-lg"></i> Correct
+                            </button>
+                            <button type="button" class="btn btn-outline-warning action-btn" id="correctBtn">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="button" class="btn btn-outline-secondary" id="voiceBtn">
+                                <i class="bi bi-mic"></i> Use Voice Instead
+                            </button>
+                            <a href="{% url 'plate_ocr:photo_rating_wizard' %}?step=capture" class="btn btn-outline-danger">
+                                <i class="bi bi-camera"></i> Retake Photo
+                            </a>
+                        </div>
+                        
+                        <!-- Correction Form -->
+                        <div class="correction-form" id="correctionForm">
+                            <label class="form-label fw-bold">Enter correct plate number:</label>
+                            <input type="text" name="corrected_plate" class="form-control correction-input" 
+                                   placeholder="e.g., UA 077AK" maxlength="12" id="correctionInput">
+                            <div class="d-grid gap-2 mt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check"></i> Use This Plate
+                                </button>
+                                <button type="button" class="btn btn-link text-muted" id="cancelCorrection">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const correctBtn = document.getElementById('correctBtn');
+    const correctionForm = document.getElementById('correctionForm');
+    const correctionInput = document.getElementById('correctionInput');
+    const cancelCorrection = document.getElementById('cancelCorrection');
+    const actionInput = document.getElementById('actionInput');
+    const voiceBtn = document.getElementById('voiceBtn');
+    
+    correctBtn.addEventListener('click', function() {
+        correctionForm.classList.add('active');
+        correctionInput.focus();
+        actionInput.value = 'correct';
+    });
+    
+    cancelCorrection.addEventListener('click', function() {
+        correctionForm.classList.remove('active');
+        correctionInput.value = '';
+        actionInput.value = 'confirm';
+    });
+    
+    correctionInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+    
+    voiceBtn.addEventListener('click', function() {
+        window.location.href = "{% url 'plate_ocr:voice_plate_entry' %}";
+    });
+});
+</script>
+{% endblock %}

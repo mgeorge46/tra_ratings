@@ -1,0 +1,391 @@
+
+
+{% block title %}Voice Entry - Number Plate{% endblock %}
+
+{% block extra_css %}
+<style>
+    .voice-container {
+        text-align: center;
+        padding: 2rem 0;
+    }
+
+    .voice-btn-large {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(145deg, #28a745, #20c997);
+        color: white;
+        font-size: 4rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        margin: 2rem 0;
+    }
+
+    .voice-btn-large:hover {
+        transform: scale(1.05);
+        box-shadow: 0 12px 35px rgba(40, 167, 69, 0.5);
+    }
+
+    .voice-btn-large.listening {
+        animation: pulse-large 1.5s infinite;
+        background: linear-gradient(145deg, #dc3545, #e74c3c);
+    }
+
+    @keyframes pulse-large {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        70% { box-shadow: 0 0 0 30px rgba(220, 53, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+
+    .voice-status {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #6c757d;
+        min-height: 30px;
+        margin-bottom: 1rem;
+    }
+
+    .voice-status.listening {
+        color: #dc3545;
+    }
+
+    .result-display {
+        background: linear-gradient(145deg, #ffd700, #ffec8b);
+        color: #000;
+        font-size: 2rem;
+        font-weight: bold;
+        letter-spacing: 4px;
+        padding: 20px 30px;
+        border-radius: 8px;
+        border: 4px solid #000;
+        display: none;
+        margin: 1.5rem auto;
+        max-width: 300px;
+    }
+
+    .result-display.has-result {
+        display: block;
+    }
+
+    .tips-section {
+        background: #e7f3ff;
+        border: 1px solid #b6d4fe;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        text-align: left;
+    }
+
+    .tips-section h6 {
+        color: #0a58ca;
+        margin-bottom: 1rem;
+    }
+
+    .tips-section ul {
+        margin-bottom: 0;
+        padding-left: 1.2rem;
+    }
+
+    .tips-section li {
+        margin-bottom: 0.5rem;
+        color: #084298;
+    }
+
+    .manual-fallback {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .manual-input-large {
+        font-size: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .not-supported {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-mic me-2"></i>
+                        Voice Entry
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <div class="voice-container">
+                        <h4 class="mb-3">Speak the Number Plate</h4>
+                        <p class="text-muted">Tap the microphone and say each letter and number clearly</p>
+
+                        <!-- Not Supported Warning (hidden by default) -->
+                        <div class="not-supported" id="notSupported" style="display: none;">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Voice recognition is not supported in your browser. Please use the manual input below.
+                        </div>
+
+                        <!-- Voice Button -->
+                        <button type="button" class="voice-btn-large" id="voiceBtn">
+                            🎤
+                        </button>
+
+                        <div class="voice-status" id="voiceStatus">
+                            Tap microphone to start
+                        </div>
+
+                        <!-- Result Display -->
+                        <div class="result-display" id="resultDisplay"></div>
+
+                        <!-- Form -->
+                        <form method="post" id="voiceForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="plate_number" id="plateInput" value="">
+                            <input type="hidden" name="input_method" value="voice">
+
+                            <div class="d-grid gap-2 mt-4" id="submitSection" style="display: none;">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    Use This Plate
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="tryAgainBtn">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>
+                                    Try Again
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tips -->
+                    <div class="tips-section">
+                        <h6><i class="bi bi-lightbulb me-2"></i>Tips for better recognition:</h6>
+                        <ul>
+                            <li>Say each character clearly: "U-A zero-seven-seven A-K"</li>
+                            <li>Use "zero" instead of "oh" for the number 0</li>
+                            <li>Speak at a normal pace, not too fast</li>
+                            <li>Ensure you're in a quiet environment</li>
+                            <li>Hold the phone close to your mouth</li>
+                        </ul>
+                    </div>
+
+                    <!-- Manual Fallback -->
+                    <div class="manual-fallback">
+                        <h6 class="text-muted mb-3">Or type it manually:</h6>
+                        <form method="post" id="manualForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="input_method" value="text">
+                            <div class="input-group">
+                                <input type="text" name="plate_number" class="form-control manual-input-large"
+                                       placeholder="e.g., UA 077AK" maxlength="12" id="manualInput">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Back Link -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'photo_rating_wizard' %}?step=capture" class="text-muted">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Back to capture
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const voiceBtn = document.getElementById('voiceBtn');
+    const voiceStatus = document.getElementById('voiceStatus');
+    const resultDisplay = document.getElementById('resultDisplay');
+    const plateInput = document.getElementById('plateInput');
+    const submitSection = document.getElementById('submitSection');
+    const tryAgainBtn = document.getElementById('tryAgainBtn');
+    const notSupported = document.getElementById('notSupported');
+    const manualInput = document.getElementById('manualInput');
+
+    let recognition = null;
+    let isListening = false;
+
+    // Number word conversions
+    const numberWords = {
+        'zero': '0', 'oh': '0', 'o': '0',
+        'one': '1', 'won': '1',
+        'two': '2', 'to': '2', 'too': '2',
+        'three': '3', 'tree': '3',
+        'four': '4', 'for': '4', 'fore': '4',
+        'five': '5',
+        'six': '6', 'sicks': '6',
+        'seven': '7',
+        'eight': '8', 'ate': '8',
+        'nine': '9', 'niner': '9'
+    };
+
+    // NATO phonetic alphabet
+    const natoAlphabet = {
+        'alpha': 'A', 'alfa': 'A',
+        'bravo': 'B',
+        'charlie': 'C',
+        'delta': 'D',
+        'echo': 'E',
+        'foxtrot': 'F',
+        'golf': 'G',
+        'hotel': 'H',
+        'india': 'I',
+        'juliet': 'J', 'juliett': 'J',
+        'kilo': 'K',
+        'lima': 'L',
+        'mike': 'M',
+        'november': 'N',
+        'oscar': 'O',
+        'papa': 'P',
+        'quebec': 'Q',
+        'romeo': 'R',
+        'sierra': 'S',
+        'tango': 'T',
+        'uniform': 'U',
+        'victor': 'V',
+        'whiskey': 'W',
+        'xray': 'X', 'x-ray': 'X',
+        'yankee': 'Y',
+        'zulu': 'Z'
+    };
+
+    function convertSpokenToPlate(text) {
+        let result = text.toLowerCase();
+
+        // Replace NATO phonetic alphabet
+        Object.keys(natoAlphabet).forEach(word => {
+            const regex = new RegExp('\\b' + word + '\\b', 'gi');
+            result = result.replace(regex, natoAlphabet[word]);
+        });
+
+        // Replace number words
+        Object.keys(numberWords).forEach(word => {
+            const regex = new RegExp('\\b' + word + '\\b', 'gi');
+            result = result.replace(regex, numberWords[word]);
+        });
+
+        // Remove spaces and non-alphanumeric, convert to uppercase
+        result = result.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        return result;
+    }
+
+    // Check for speech recognition support
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = function() {
+            isListening = true;
+            voiceBtn.classList.add('listening');
+            voiceBtn.textContent = '🔴';
+            voiceStatus.textContent = 'Listening... speak now';
+            voiceStatus.classList.add('listening');
+        };
+
+        recognition.onresult = function(event) {
+            let transcript = '';
+            let isFinal = false;
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    isFinal = true;
+                }
+            }
+
+            const converted = convertSpokenToPlate(transcript);
+            resultDisplay.textContent = converted;
+            resultDisplay.classList.add('has-result');
+
+            if (isFinal && converted.length >= 5) {
+                plateInput.value = converted;
+                submitSection.style.display = 'block';
+                voiceStatus.textContent = 'Is this correct?';
+                voiceStatus.classList.remove('listening');
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            voiceStatus.textContent = 'Error: ' + event.error + '. Try again.';
+            voiceStatus.classList.remove('listening');
+            stopListening();
+        };
+
+        recognition.onend = function() {
+            stopListening();
+        };
+    } else {
+        // Speech recognition not supported
+        notSupported.style.display = 'block';
+        voiceBtn.style.display = 'none';
+        voiceStatus.style.display = 'none';
+    }
+
+    function stopListening() {
+        isListening = false;
+        voiceBtn.classList.remove('listening');
+        voiceBtn.textContent = '🎤';
+        if (!plateInput.value) {
+            voiceStatus.textContent = 'Tap microphone to try again';
+        }
+        voiceStatus.classList.remove('listening');
+    }
+
+    voiceBtn.addEventListener('click', function() {
+        if (!recognition) return;
+
+        if (isListening) {
+            recognition.stop();
+        } else {
+            // Reset
+            resultDisplay.classList.remove('has-result');
+            submitSection.style.display = 'none';
+            plateInput.value = '';
+            recognition.start();
+        }
+    });
+
+    tryAgainBtn.addEventListener('click', function() {
+        resultDisplay.classList.remove('has-result');
+        submitSection.style.display = 'none';
+        plateInput.value = '';
+        voiceStatus.textContent = 'Tap microphone to start';
+    });
+
+    // Manual input uppercase
+    manualInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+});
+</script>
+{% endblock %}

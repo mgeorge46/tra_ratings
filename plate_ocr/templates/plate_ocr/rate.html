@@ -1,0 +1,356 @@
+{% extends "tra_theme/base.html" %}
+{% load static %}
+
+{% block title %}Rate This Driver{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rateYo/2.3.2/jquery.rateyo.min.css">
+<style>
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .step-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #dee2e6;
+    }
+    
+    .step-dot.active {
+        background: #0d6efd;
+    }
+    
+    .step-dot.completed {
+        background: #28a745;
+    }
+    
+    .plate-badge {
+        background: linear-gradient(145deg, #ffd700, #ffec8b);
+        color: #000;
+        font-weight: bold;
+        letter-spacing: 2px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: 2px solid #000;
+        display: inline-block;
+        font-size: 1.1rem;
+    }
+    
+    .rating-section {
+        text-align: center;
+        padding: 2rem 0;
+    }
+    
+    #rateYo {
+        display: inline-block;
+    }
+    
+    .rating-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #F39C12;
+        margin-top: 1rem;
+    }
+    
+    .rating-label {
+        font-size: 1.1rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+    }
+    
+    .comment-section {
+        margin-top: 2rem;
+    }
+    
+    .comment-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    .comment-btn {
+        padding: 12px 16px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: left;
+        font-size: 0.9rem;
+    }
+    
+    .comment-btn:hover {
+        border-color: #0d6efd;
+        background: #f0f7ff;
+    }
+    
+    .comment-btn.selected {
+        border-color: #0d6efd;
+        background: #0d6efd;
+        color: white;
+    }
+    
+    .comment-btn .emoji {
+        margin-right: 8px;
+    }
+    
+    .other-comment {
+        display: none;
+        margin-top: 1rem;
+    }
+    
+    .other-comment.active {
+        display: block;
+    }
+    
+    .location-info {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 10px 15px;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .location-info i {
+        color: #28a745;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step-dot completed"></div>
+                <div class="step-dot completed"></div>
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-star me-2"></i>
+                        Rate This Driver
+                    </h5>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Plate Display -->
+                    <div class="text-center mb-3">
+                        <span class="plate-badge">{{ plate_number }}</span>
+                        <div class="text-muted mt-2">
+                            {% if motor_type == 'motorcycle' %}🏍️ Boda Boda
+                            {% elif motor_type == 'car' %}🚗 Car
+                            {% elif motor_type == 'taxi' %}🚕 Taxi
+                            {% elif motor_type == 'bus' %}🚌 Bus
+                            {% elif motor_type == 'truck' %}🚛 Truck
+                            {% elif motor_type == 'tuku' %}🛺 Tuku Tuku
+                            {% elif motor_type == 'coaster' %}🚐 Coaster
+                            {% else %}🚘 {{ motor_type|title }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <form method="post" id="rateForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="rating" id="ratingInput" value="0">
+                        <input type="hidden" name="location" id="locationInput" value="">
+                        
+                        <!-- Star Rating -->
+                        <div class="rating-section">
+                            <label class="form-label fw-bold mb-3">How was your experience?</label>
+                            <div id="rateYo"></div>
+                            <div class="rating-value" id="ratingValue">0</div>
+                            <div class="rating-label" id="ratingLabel">Tap to rate</div>
+                        </div>
+                        
+                        <!-- Quick Comments -->
+                        <div class="comment-section">
+                            <label class="form-label fw-bold">Quick Feedback (optional)</label>
+                            
+                            <!-- Negative Comments (shown for rating <= 2.5) -->
+                            <div class="comment-grid" id="negativeComments" style="display: none;">
+                                <button type="button" class="comment-btn" data-comment="Reckless driving">
+                                    <span class="emoji">⚠️</span>Reckless driving
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Ignored traffic rules">
+                                    <span class="emoji">🚫</span>Ignored rules
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Dangerous overtaking">
+                                    <span class="emoji">💨</span>Dangerous overtaking
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Rude behavior">
+                                    <span class="emoji">😤</span>Rude behavior
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Overcharging">
+                                    <span class="emoji">💰</span>Overcharging
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Unsafe vehicle">
+                                    <span class="emoji">🔧</span>Unsafe vehicle
+                                </button>
+                            </div>
+                            
+                            <!-- Neutral Comments (shown for rating 2.5-4) -->
+                            <div class="comment-grid" id="neutralComments" style="display: none;">
+                                <button type="button" class="comment-btn" data-comment="Decent driving">
+                                    <span class="emoji">👍</span>Decent driving
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Could improve">
+                                    <span class="emoji">📈</span>Could improve
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Safe but slow">
+                                    <span class="emoji">🐢</span>Safe but slow
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Average service">
+                                    <span class="emoji">😐</span>Average service
+                                </button>
+                            </div>
+                            
+                            <!-- Positive Comments (shown for rating > 4) -->
+                            <div class="comment-grid" id="positiveComments" style="display: none;">
+                                <button type="button" class="comment-btn" data-comment="Polite and professional">
+                                    <span class="emoji">😊</span>Polite & professional
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Smooth driving">
+                                    <span class="emoji">✨</span>Smooth driving
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Followed all rules">
+                                    <span class="emoji">✅</span>Followed all rules
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Excellent service">
+                                    <span class="emoji">⭐</span>Excellent service
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Safe and careful">
+                                    <span class="emoji">🛡️</span>Safe and careful
+                                </button>
+                                <button type="button" class="comment-btn" data-comment="Fair pricing">
+                                    <span class="emoji">💚</span>Fair pricing
+                                </button>
+                            </div>
+                            
+                            <!-- Other Option -->
+                            <button type="button" class="comment-btn w-100 mt-2" id="otherBtn" data-comment="other">
+                                <span class="emoji">✏️</span>Other (write your own)
+                            </button>
+                            
+                            <input type="hidden" name="selected_comment" id="selectedComment" value="">
+                            
+                            <div class="other-comment" id="otherCommentSection">
+                                <textarea name="custom_comment" class="form-control" rows="3" 
+                                          placeholder="Write your feedback here..." id="customComment"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Location -->
+                        <div class="location-info" id="locationInfo" style="display: none;">
+                            <i class="bi bi-geo-alt-fill me-2"></i>
+                            <span id="locationText">Getting location...</span>
+                        </div>
+                        
+                        <!-- Submit -->
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                                Continue to Review <i class="bi bi-arrow-right"></i>
+                            </button>
+                            <a href="{% url 'plate_ocr:photo_rating_wizard' %}?step=confirm" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rateYo/2.3.2/jquery.rateyo.min.js"></script>
+<script>
+$(document).ready(function() {
+    const ratingLabels = {
+        0: 'Tap to rate',
+        0.5: 'Terrible', 1: 'Terrible',
+        1.5: 'Poor', 2: 'Poor',
+        2.5: 'Average', 3: 'Average',
+        3.5: 'Good', 4: 'Good',
+        4.5: 'Excellent', 5: 'Excellent'
+    };
+    
+    // Initialize RateYo
+    $("#rateYo").rateYo({
+        rating: 0,
+        halfStar: true,
+        starWidth: "40px",
+        ratedFill: "#F39C12",
+        normalFill: "#e0e0e0"
+    }).on("rateyo.set", function(e, data) {
+        const rating = data.rating;
+        $("#ratingInput").val(rating);
+        $("#ratingValue").text(rating);
+        $("#ratingLabel").text(ratingLabels[rating] || 'Rate this driver');
+        
+        // Show appropriate comments
+        updateCommentVisibility(rating);
+        
+        // Enable submit button
+        $("#submitBtn").prop("disabled", rating === 0);
+    });
+    
+    function updateCommentVisibility(rating) {
+        $("#negativeComments, #neutralComments, #positiveComments").hide();
+        $(".comment-btn").removeClass("selected");
+        $("#selectedComment").val("");
+        
+        if (rating <= 2.5) {
+            $("#negativeComments").show();
+        } else if (rating <= 4) {
+            $("#neutralComments").show();
+        } else {
+            $("#positiveComments").show();
+        }
+    }
+    
+    // Comment selection
+    $(".comment-btn").on("click", function() {
+        const comment = $(this).data("comment");
+        
+        if (comment === "other") {
+            $("#otherCommentSection").addClass("active");
+            $(this).addClass("selected");
+            $("#selectedComment").val("");
+        } else {
+            $(".comment-btn").removeClass("selected");
+            $(this).addClass("selected");
+            $("#otherCommentSection").removeClass("active");
+            $("#selectedComment").val(comment);
+        }
+    });
+    
+    // Get location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const lat = position.coords.latitude.toFixed(4);
+            const lng = position.coords.longitude.toFixed(4);
+            $("#locationInput").val(lat + "," + lng);
+            $("#locationText").text("Location captured");
+            $("#locationInfo").show();
+        }, function(error) {
+            console.log("Location error:", error);
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,931 @@
+
+{% load static %}
+
+{% block title %}Rate a Vehicle - Take Photo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .method-tabs {
+        display: flex;
+        gap: 0;
+        margin-bottom: 1.5rem;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 2px solid #dee2e6;
+    }
+    
+    .method-tab {
+        flex: 1;
+        padding: 12px 16px;
+        text-align: center;
+        cursor: pointer;
+        background: #f8f9fa;
+        border: none;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .method-tab:not(:last-child) {
+        border-right: 1px solid #dee2e6;
+    }
+    
+    .method-tab.active {
+        background: #0d6efd;
+        color: white;
+    }
+    
+    .method-tab:hover:not(.active) {
+        background: #e9ecef;
+    }
+    
+    .method-content {
+        display: none;
+    }
+    
+    .method-content.active {
+        display: block;
+    }
+    
+    .motor-type-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .motor-type-btn {
+        padding: 15px 10px;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        background: white;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    
+    .motor-type-btn:hover {
+        border-color: #0d6efd;
+        background: #f0f7ff;
+    }
+    
+    .motor-type-btn.selected {
+        border-color: #0d6efd;
+        background: #0d6efd;
+        color: white;
+    }
+    
+    .motor-type-btn .emoji {
+        font-size: 1.8rem;
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+    .motor-type-btn .label {
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    /* Photo Upload Styles */
+    .photo-capture-container {
+        position: relative;
+    }
+    
+    .photo-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 1rem;
+    }
+    
+    .photo-option-btn {
+        padding: 30px 20px;
+        border: 3px dashed #dee2e6;
+        border-radius: 12px;
+        background: #fafafa;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    
+    .photo-option-btn:hover {
+        border-color: #0d6efd;
+        background: #f0f7ff;
+        transform: translateY(-2px);
+    }
+    
+    .photo-option-btn .icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 10px;
+    }
+    
+    .photo-option-btn .title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 5px;
+    }
+    
+    .photo-option-btn .subtitle {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    /* Live Camera Preview */
+    .camera-preview-container {
+        display: none;
+        position: relative;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+    
+    .camera-preview-container.active {
+        display: block;
+    }
+    
+    #cameraPreview {
+        width: 100%;
+        max-height: 400px;
+        object-fit: cover;
+    }
+    
+    .camera-controls {
+        position: absolute;
+        bottom: 20px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+    
+    .camera-btn {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 4px solid white;
+        background: rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .camera-btn:hover {
+        background: rgba(255, 255, 255, 0.5);
+        transform: scale(1.05);
+    }
+    
+    .camera-btn.capture {
+        background: #dc3545;
+        border-color: white;
+    }
+    
+    .camera-btn.close {
+        width: 50px;
+        height: 50px;
+        background: rgba(0, 0, 0, 0.5);
+        font-size: 1.5rem;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Photo Preview */
+    .photo-preview {
+        display: none;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .photo-preview.has-image {
+        display: block;
+    }
+    
+    .photo-preview img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 12px;
+        border: 3px solid #28a745;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .photo-preview .preview-actions {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    /* Hidden file inputs */
+    .hidden-input {
+        display: none !important;
+    }
+    
+    /* Voice Styles */
+    .voice-btn {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(145deg, #28a745, #20c997);
+        color: white;
+        font-size: 2.5rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .voice-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+    
+    .voice-btn.listening {
+        animation: pulse 1.5s infinite;
+        background: linear-gradient(145deg, #dc3545, #e74c3c);
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        70% { box-shadow: 0 0 0 20px rgba(220, 53, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+    
+    .voice-status {
+        margin-top: 1rem;
+        font-weight: 500;
+        min-height: 24px;
+    }
+    
+    .voice-result {
+        margin-top: 1rem;
+        padding: 15px;
+        background: linear-gradient(145deg, #ffd700, #ffec8b);
+        border: 3px solid #000;
+        border-radius: 8px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        letter-spacing: 2px;
+        display: none;
+    }
+    
+    .voice-result.has-result {
+        display: block;
+    }
+    
+    .manual-input {
+        font-size: 1.3rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        color: white;
+    }
+    
+    .loading-overlay.active {
+        display: flex;
+    }
+    
+    .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .step-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #dee2e6;
+    }
+    
+    .step-dot.active {
+        background: #0d6efd;
+    }
+    
+    .step-dot.completed {
+        background: #28a745;
+    }
+    
+    /* Camera not supported message */
+    .camera-not-supported {
+        display: none;
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-camera me-2"></i>
+                        Rate a Vehicle
+                    </h5>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Motor Type Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">What type of vehicle?</label>
+                        <div class="motor-type-grid">
+                            <div class="motor-type-btn" data-type="motorcycle">
+                                <span class="emoji">🏍️</span>
+                                <span class="label">Boda Boda</span>
+                            </div>
+                            <div class="motor-type-btn" data-type="car">
+                                <span class="emoji">🚗</span>
+                                <span class="label">Car</span>
+                            </div>
+                            <div class="motor-type-btn" data-type="taxi">
+                                <span class="emoji">🚕</span>
+                                <span class="label">Taxi</span>
+                            </div>
+                            <div class="motor-type-btn" data-type="bus">
+                                <span class="emoji">🚌</span>
+                                <span class="label">Bus</span>
+                            </div>
+                            <div class="motor-type-btn" data-type="truck">
+                                <span class="emoji">🚛</span>
+                                <span class="label">Truck</span>
+                            </div>
+                            <div class="motor-type-btn" data-type="tuku">
+                                <span class="emoji">🛺</span>
+                                <span class="label">Tuku Tuku</span>
+                            </div>
+                            <div class="motor-type-btn" data-type="coaster">
+                                <span class="emoji">🚐</span>
+                                <span class="label">Coaster</span>
+                            </div>
+                            <div class="motor-type-btn" data-type="van">
+                                <span class="emoji">🚙</span>
+                                <span class="label">Van</span>
+                            </div>
+                            <div class="motor-type-btn" data-type="other">
+                                <span class="emoji">🚘</span>
+                                <span class="label">Other</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Input Method Tabs -->
+                    <div class="method-tabs">
+                        <button class="method-tab active" data-method="photo">
+                            📷 Photo
+                        </button>
+                        <button class="method-tab" data-method="text">
+                            ⌨️ Text
+                        </button>
+                        <button class="method-tab" data-method="voice">
+                            🎤 Voice
+                        </button>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data" id="captureForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="motor_type" id="motorTypeInput" value="">
+                        <input type="hidden" name="input_method" id="inputMethodField" value="photo">
+                        
+                        <!-- Photo Method -->
+                        <div class="method-content active" id="photoMethod">
+                            
+                            <!-- Camera not supported warning (hidden by default) -->
+                            <div class="camera-not-supported" id="cameraNotSupported">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <strong>Camera not available.</strong> You can still browse and upload a photo from your device.
+                            </div>
+                            
+                            <!-- Photo Options: Camera or Browse -->
+                            <div class="photo-options" id="photoOptions">
+                                <div class="photo-option-btn" id="openCameraBtn">
+                                    <span class="icon">📸</span>
+                                    <span class="title">Take Photo</span>
+                                    <span class="subtitle">Use your camera</span>
+                                </div>
+                                <div class="photo-option-btn" id="browseFilesBtn">
+                                    <span class="icon">🖼️</span>
+                                    <span class="title">Browse Files</span>
+                                    <span class="subtitle">Upload from gallery</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Live Camera Preview -->
+                            <div class="camera-preview-container" id="cameraContainer">
+                                <video id="cameraPreview" autoplay playsinline></video>
+                                <canvas id="captureCanvas" class="hidden-input"></canvas>
+                                <div class="camera-controls">
+                                    <button type="button" class="camera-btn close" id="closeCameraBtn">✕</button>
+                                    <button type="button" class="camera-btn capture" id="capturePhotoBtn"></button>
+                                </div>
+                            </div>
+                            
+                            <!-- Hidden File Inputs -->
+                            <!-- For direct camera capture on mobile -->
+                            <input type="file" name="photo" id="cameraInput" 
+                                   accept="image/*" capture="environment" 
+                                   class="hidden-input">
+                            
+                            <!-- For browsing files/gallery -->
+                            <input type="file" name="photo_browse" id="browseInput" 
+                                   accept="image/*" 
+                                   class="hidden-input">
+                            
+                            <!-- Photo Preview -->
+                            <div class="photo-preview" id="photoPreview">
+                                <img src="" alt="Preview" id="previewImage">
+                                <div class="preview-actions">
+                                    <button type="button" class="btn btn-outline-secondary" id="retakeBtn">
+                                        <i class="bi bi-arrow-clockwise me-1"></i> Retake
+                                    </button>
+                                    <button type="button" class="btn btn-success" id="usePhotoBtn">
+                                        <i class="bi bi-check me-1"></i> Use This Photo
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <p class="text-muted text-center small mt-2">
+                                <i class="bi bi-info-circle me-1"></i>
+                                For best results, capture the plate clearly and straight-on
+                            </p>
+                        </div>
+                        
+                        <!-- Text Method -->
+                        <div class="method-content" id="textMethod">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Enter Number Plate</label>
+                                <input type="text" name="plate_text" 
+                                       class="form-control manual-input" 
+                                       placeholder="e.g., UA 077AK"
+                                       maxlength="12"
+                                       id="manualPlateInput">
+                                <div class="form-text">
+                                    Enter the plate exactly as shown (e.g., UA 077AK, UDS 164M, UMA 055AF)
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Voice Method -->
+                        <div class="method-content" id="voiceMethod">
+                            <div class="text-center py-4">
+                                <button type="button" class="voice-btn" id="voiceBtn">
+                                    🎤
+                                </button>
+                                <div class="voice-status" id="voiceStatus">
+                                    Tap to start speaking
+                                </div>
+                                <div class="voice-result" id="voiceResult"></div>
+                                <input type="hidden" name="voice_plate" id="voicePlateInput">
+                            </div>
+                            <div class="alert alert-info mt-3">
+                                <strong>Tips:</strong>
+                                <ul class="mb-0 small">
+                                    <li>Speak clearly: "U-A zero-seven-seven A-K"</li>
+                                    <li>Say each letter and number separately</li>
+                                    <li>Use "zero" instead of "oh" for 0</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                                Continue <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <p class="mt-3">Processing image...</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elements
+    const motorTypeBtns = document.querySelectorAll('.motor-type-btn');
+    const methodTabs = document.querySelectorAll('.method-tab');
+    const methodContents = document.querySelectorAll('.method-content');
+    const photoOptions = document.getElementById('photoOptions');
+    const openCameraBtn = document.getElementById('openCameraBtn');
+    const browseFilesBtn = document.getElementById('browseFilesBtn');
+    const cameraContainer = document.getElementById('cameraContainer');
+    const cameraPreview = document.getElementById('cameraPreview');
+    const captureCanvas = document.getElementById('captureCanvas');
+    const capturePhotoBtn = document.getElementById('capturePhotoBtn');
+    const closeCameraBtn = document.getElementById('closeCameraBtn');
+    const cameraInput = document.getElementById('cameraInput');
+    const browseInput = document.getElementById('browseInput');
+    const photoPreview = document.getElementById('photoPreview');
+    const previewImage = document.getElementById('previewImage');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const usePhotoBtn = document.getElementById('usePhotoBtn');
+    const manualPlateInput = document.getElementById('manualPlateInput');
+    const voiceBtn = document.getElementById('voiceBtn');
+    const voiceStatus = document.getElementById('voiceStatus');
+    const voiceResult = document.getElementById('voiceResult');
+    const voicePlateInput = document.getElementById('voicePlateInput');
+    const submitBtn = document.getElementById('submitBtn');
+    const motorTypeInput = document.getElementById('motorTypeInput');
+    const inputMethodField = document.getElementById('inputMethodField');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const captureForm = document.getElementById('captureForm');
+    const cameraNotSupported = document.getElementById('cameraNotSupported');
+    
+    let selectedMotorType = null;
+    let currentMethod = 'photo';
+    let hasValidPhoto = false;
+    let cameraStream = null;
+    let capturedBlob = null;
+    
+    // Check if device has camera capability
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const hasMediaDevices = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    
+    // Motor Type Selection
+    motorTypeBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            motorTypeBtns.forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedMotorType = this.dataset.type;
+            motorTypeInput.value = selectedMotorType;
+            updateSubmitButton();
+        });
+    });
+    
+    // Method Tab Switching
+    methodTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            methodTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            currentMethod = this.dataset.method;
+            inputMethodField.value = currentMethod;
+            
+            methodContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(currentMethod + 'Method').classList.add('active');
+            
+            // Close camera if switching away from photo
+            if (currentMethod !== 'photo') {
+                stopCamera();
+            }
+            
+            updateSubmitButton();
+        });
+    });
+    
+    // =========================================
+    // CAMERA HANDLING
+    // =========================================
+    
+    // Open Camera Button - Try live camera first, fallback to file input
+    openCameraBtn.addEventListener('click', function() {
+        if (isMobile) {
+            // On mobile, use the native camera input (most reliable)
+            cameraInput.click();
+        } else if (hasMediaDevices) {
+            // On desktop with camera support, try live camera
+            startCamera();
+        } else {
+            // No camera available
+            cameraNotSupported.style.display = 'block';
+            browseInput.click();
+        }
+    });
+    
+    // Browse Files Button
+    browseFilesBtn.addEventListener('click', function() {
+        browseInput.click();
+    });
+    
+    // Start live camera (desktop)
+    async function startCamera() {
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: { 
+                    facingMode: 'environment',  // Prefer rear camera
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            });
+            
+            cameraPreview.srcObject = cameraStream;
+            cameraContainer.classList.add('active');
+            photoOptions.style.display = 'none';
+            
+        } catch (error) {
+            console.error('Camera error:', error);
+            cameraNotSupported.style.display = 'block';
+            
+            // Fallback: try the file input with camera capture
+            if (error.name === 'NotAllowedError') {
+                alert('Camera permission denied. Please allow camera access or use the Browse option.');
+            } else {
+                alert('Could not access camera. Please use the Browse option.');
+            }
+        }
+    }
+    
+    // Stop camera
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+        cameraPreview.srcObject = null;
+        cameraContainer.classList.remove('active');
+        photoOptions.style.display = 'grid';
+    }
+    
+    // Close camera button
+    closeCameraBtn.addEventListener('click', function() {
+        stopCamera();
+    });
+    
+    // Capture photo from live camera
+    capturePhotoBtn.addEventListener('click', function() {
+        if (!cameraStream) return;
+        
+        // Set canvas size to video size
+        captureCanvas.width = cameraPreview.videoWidth;
+        captureCanvas.height = cameraPreview.videoHeight;
+        
+        // Draw video frame to canvas
+        const ctx = captureCanvas.getContext('2d');
+        ctx.drawImage(cameraPreview, 0, 0);
+        
+        // Convert to blob
+        captureCanvas.toBlob(function(blob) {
+            capturedBlob = blob;
+            
+            // Show preview
+            previewImage.src = URL.createObjectURL(blob);
+            photoPreview.classList.add('has-image');
+            
+            // Hide camera
+            stopCamera();
+            photoOptions.style.display = 'none';
+            
+            hasValidPhoto = true;
+            updateSubmitButton();
+        }, 'image/jpeg', 0.9);
+    });
+    
+    // Handle camera input (mobile capture)
+    cameraInput.addEventListener('change', handleFileSelect);
+    
+    // Handle browse input
+    browseInput.addEventListener('change', handleFileSelect);
+    
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // Preview the image
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            photoPreview.classList.add('has-image');
+            photoOptions.style.display = 'none';
+            hasValidPhoto = true;
+            capturedBlob = null;  // Clear any captured blob, we're using the file input
+            updateSubmitButton();
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    // Retake button
+    retakeBtn.addEventListener('click', function() {
+        resetPhotoCapture();
+    });
+    
+    // Use Photo button
+    usePhotoBtn.addEventListener('click', function() {
+        // The photo is already ready, just enable submit
+        if (selectedMotorType) {
+            submitBtn.disabled = false;
+        }
+    });
+    
+    function resetPhotoCapture() {
+        cameraInput.value = '';
+        browseInput.value = '';
+        capturedBlob = null;
+        photoPreview.classList.remove('has-image');
+        photoOptions.style.display = 'grid';
+        hasValidPhoto = false;
+        updateSubmitButton();
+    }
+    
+    // =========================================
+    // VOICE RECOGNITION
+    // =========================================
+    
+    let recognition = null;
+    let isListening = false;
+    
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        
+        recognition.onstart = function() {
+            isListening = true;
+            voiceBtn.classList.add('listening');
+            voiceBtn.textContent = '🔴';
+            voiceStatus.textContent = 'Listening...';
+        };
+        
+        recognition.onresult = function(event) {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            
+            const converted = convertSpokenToPlate(transcript);
+            voiceResult.textContent = converted;
+            voiceResult.classList.add('has-result');
+            voicePlateInput.value = converted;
+            
+            if (event.results[event.resultIndex].isFinal) {
+                updateSubmitButton();
+            }
+        };
+        
+        recognition.onerror = function(event) {
+            voiceStatus.textContent = 'Error: ' + event.error;
+            stopListening();
+        };
+        
+        recognition.onend = function() {
+            stopListening();
+        };
+    }
+    
+    function convertSpokenToPlate(text) {
+        const numberWords = {
+            'zero': '0', 'oh': '0', 'o': '0',
+            'one': '1', 'won': '1',
+            'two': '2', 'to': '2', 'too': '2',
+            'three': '3', 'tree': '3',
+            'four': '4', 'for': '4', 'fore': '4',
+            'five': '5',
+            'six': '6', 'sicks': '6',
+            'seven': '7',
+            'eight': '8', 'ate': '8',
+            'nine': '9', 'niner': '9'
+        };
+        
+        let result = text.toUpperCase();
+        
+        Object.keys(numberWords).forEach(word => {
+            const regex = new RegExp('\\b' + word + '\\b', 'gi');
+            result = result.replace(regex, numberWords[word]);
+        });
+        
+        result = result.replace(/[^A-Z0-9]/g, '');
+        return result;
+    }
+    
+    voiceBtn.addEventListener('click', function() {
+        if (!recognition) {
+            voiceStatus.textContent = 'Voice recognition not supported';
+            return;
+        }
+        
+        if (isListening) {
+            recognition.stop();
+        } else {
+            recognition.start();
+        }
+    });
+    
+    function stopListening() {
+        isListening = false;
+        voiceBtn.classList.remove('listening');
+        voiceBtn.textContent = '🎤';
+        voiceStatus.textContent = 'Tap to speak again';
+    }
+    
+    // =========================================
+    // MANUAL INPUT
+    // =========================================
+    
+    manualPlateInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+        updateSubmitButton();
+    });
+    
+    // =========================================
+    // FORM SUBMISSION
+    // =========================================
+    
+    function updateSubmitButton() {
+        let canSubmit = selectedMotorType !== null;
+        
+        if (currentMethod === 'photo') {
+            canSubmit = canSubmit && hasValidPhoto;
+        } else if (currentMethod === 'text') {
+            canSubmit = canSubmit && manualPlateInput.value.length >= 6;
+        } else if (currentMethod === 'voice') {
+            canSubmit = canSubmit && voicePlateInput.value.length >= 6;
+        }
+        
+        submitBtn.disabled = !canSubmit;
+    }
+    
+    captureForm.addEventListener('submit', function(e) {
+        // If we captured via live camera, we need to append the blob
+        if (currentMethod === 'photo' && capturedBlob) {
+            e.preventDefault();
+            
+            const formData = new FormData(captureForm);
+            formData.set('photo', capturedBlob, 'capture.jpg');
+            
+            loadingOverlay.classList.add('active');
+            
+            fetch(captureForm.action || window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    return response.text();
+                }
+            })
+            .then(html => {
+                if (html) {
+                    document.open();
+                    document.write(html);
+                    document.close();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingOverlay.classList.remove('active');
+                alert('Error submitting form. Please try again.');
+            });
+        } else if (currentMethod === 'photo') {
+            loadingOverlay.classList.add('active');
+        }
+    });
+});
+</script>
+{% endblock %}
